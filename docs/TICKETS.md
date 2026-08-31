@@ -1,0 +1,140 @@
+# Work log — Linear-ready tickets
+
+Upload companion: `tickets.csv` (same content, Linear CSV-import columns).
+Tickets DA-1…DA-12 are **Done** (shipped on this branch) and double as the work log;
+DA-13…DA-20 are **Backlog** — the follow-ups and placeholder swaps.
+
+---
+
+## Done (shipped in this change)
+
+### DA-1 · Scaffold Design Arena app skeleton (backend + frontend)
+Self-contained repo: FastAPI + SQLAlchemy backend (SQLite default),
+Vite/React/TS/Tailwind frontend matching the repo's existing stack, Makefile, README,
+env template. Single-process prod shape: backend serves the built SPA.
+*Labels: infra · Estimate: 2*
+
+### DA-2 · Data model for arena battles and votes
+ORM schema: `users`, `arena_models`, `battles`, `generations`, `matches`, `votes`,
+`rating_snapshots`, `model_ratings`. Votes append-only with `synthetic` flag; matches
+unique per (battle, round); anonymity enforced at serialization.
+*Labels: backend, data · Estimate: 2*
+
+### DA-3 · Passwordless auth (email codes) with placeholder email delivery
+Request-code/verify endpoints, 15-min single-use codes, HMAC-signed stdlib session
+tokens (cookie + bearer), `/me`, logout. Dev mode surfaces the code in the response/UI;
+`EMAIL_PROVIDER_API_KEY` placeholder for Resend/SendGrid.
+*Labels: backend, auth · Estimate: 2*
+
+### DA-4 · Offline sample generation provider with model personas
+14 design personas (palette/typography/flavor) × 6 category template families
+(website, UI component, SVG dataviz, playable canvas game, SVG logo, ASCII art).
+Deterministic per (model, prompt, category), prompt-keyword aware, self-contained HTML.
+*Labels: backend, generation · Estimate: 3*
+
+### DA-5 · Live vendor adapters behind placeholder keys
+Anthropic / OpenAI / Google / OpenRouter adapters (httpx, shared category system
+prompts, fence stripping) routed by `DESIGNARENA_GENERATION_MODE=live`; fail fast with
+`ProviderNotConfigured` while keys are `PLACEHOLDER_*`.
+*Labels: backend, generation · Estimate: 2*
+
+### DA-6 · Battle orchestration + tournament state machine
+Random 4-model selection, async generation fan-out, shuffled anonymous slots,
+semi1/semi2 → final/third bracket with server-enforced vote order, vote rows written
+per pairwise choice, reveal only on completion.
+*Labels: backend, core-loop · Estimate: 3*
+
+### DA-7 · Bradley–Terry ratings engine
+MM fit over pairwise votes, geometric-mean normalization, smoothing for undefeated
+models, Elo-style display scale (1200 anchor, 400/decade), bootstrap 95% CIs.
+Unit-tested (ordering recovery, boundedness, anchor).
+*Labels: backend, pipeline · Estimate: 2*
+
+### DA-8 · Leaderboard snapshot pipeline (batch + live triggers)
+Materialized snapshots per category + overall; CLI batch job
+(`pipeline/compute_ratings.py`), background recompute on battle completion, API reads
+latest snapshot only. Verified live: completed battle moved website board 500→504 votes.
+*Labels: backend, pipeline · Estimate: 2*
+
+### DA-9 · Seed pipeline: model roster + synthetic bootstrap votes
+14-model roster (GPT-5.5, Claude Opus 4.8, Gemini 3 Pro, GLM 5.2, …) with latent
+per-category strengths; ~3k BT-distributed synthetic votes (flagged) so the board is
+credible on day one; `--reset` to regenerate.
+*Labels: backend, pipeline · Estimate: 1*
+
+### DA-10 · Frontend: prompt → vote → reveal core loop
+Landing ("What are you creating today?", category chips, examples, champions teaser),
+battle page with side-by-side sandboxed interactive previews, vote buttons + arrow-key
+shortcuts, progress dots, podium reveal with model identities and latencies.
+*Labels: frontend, core-loop · Estimate: 3*
+
+### DA-11 · Frontend: leaderboard, login, history
+Leaderboard with category tabs / score bars / CIs / win rates / methodology note;
+email-code login flow with dev-code surface; "My battles" history with resume-voting
+and winners. Auth context + API client.
+*Labels: frontend · Estimate: 2*
+
+### DA-12 · Test suite + browser QA
+10 backend tests (ratings math, API flow, bracket order, auth gating, leaderboard
+freshness); Playwright run through the full real-browser flow with screenshot review;
+game-template polish fixes (title stopwords, don't lose lives before first input).
+*Labels: quality · Estimate: 2*
+
+### DA-21 · Design fidelity pass v2 (match designarena.ai closer)
+Deep-dive after first-draft review: "models are generating" intro phase with staggered
+reveals; icon category grid inside the prompt card ("Ask Design Arena to create…");
+live stats row (`/api/stats`); model roster strip + footer; bracket visualization on
+the reveal; leaderboard podium, movement deltas vs previous snapshot (`rank_delta`/
+`is_new`), and methodology section; expand-to-fullscreen during voting; Space
+Grotesk/Inter typography; brand-name extraction ("called X" drives design copy);
+website hero variants (centered/split/editorial), line + donut chart variants, logo
+mark variants. 12 backend tests green; browser QA re-run.
+*Labels: frontend, backend, design · Estimate: 3*
+
+---
+
+## Backlog (create as open tickets)
+
+### DA-13 · Swap in real provider keys and smoke-test live generation
+Replace `PLACEHOLDER_*` keys in `.env`, set `DESIGNARENA_GENERATION_MODE=live`, verify
+each adapter (Anthropic/OpenAI/Google/OpenRouter) against real endpoints, tune category
+system prompts on real outputs.
+*Labels: backend, generation · Priority: Urgent · Estimate: 2*
+
+### DA-14 · Wire transactional email for login codes
+Integrate Resend (or SendGrid) behind `EMAIL_PROVIDER_API_KEY`, set
+`DESIGNARENA_DEV_LOGIN_CODE=0`, add resend-code UX and basic rate limiting.
+*Labels: backend, auth · Priority: High · Estimate: 1*
+
+### DA-15 · Async generation UX for live mode
+Battle POST returns immediately in `generating`; worker/asyncio task fills
+generations; frontend polls or SSE with per-slot skeletons and failure/retry states
+(status columns already exist).
+*Labels: backend, frontend · Priority: High · Estimate: 3*
+
+### DA-16 · Production hardening pass
+Set real `DESIGNARENA_SECRET_KEY`, move to Postgres (`DESIGNARENA_DATABASE_URL`),
+add Alembic migrations, guard `/api/leaderboard/recompute` behind admin auth, restrict
+CORS, schedule the batch ratings job (cron/worker).
+*Labels: infra · Priority: High · Estimate: 2*
+
+### DA-17 · Vote integrity & synthetic decay
+Per-user rate limits, anomaly filters in the pipeline (read-time filtering, votes stay
+append-only), scheduled down-weighting/aging of `synthetic=true` votes as human volume
+grows.
+*Labels: pipeline, trust · Priority: Medium · Estimate: 3*
+
+### DA-18 · Tie votes and tiebreaker match
+"Both good / both bad" options on each pairwise, optional 5th tiebreaker match
+(designarena parity); extend vote schema with outcome type and teach the BT fit ties.
+*Labels: core-loop · Priority: Medium · Estimate: 2*
+
+### DA-19 · Share pages and winners gallery
+Public read-only battle page (prompt, bracket, revealed designs), OG images, gallery of
+recent champions by category.
+*Labels: frontend, growth · Priority: Medium · Estimate: 3*
+
+### DA-20 · New-model onboarding flow
+Admin path to add a roster model: provisional rating, min-vote threshold before public
+listing, active/inactive toggles surfaced in an admin UI instead of DB edits.
+*Labels: backend, admin · Priority: Low · Estimate: 2*

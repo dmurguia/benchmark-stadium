@@ -1,0 +1,138 @@
+"""Battle orchestration: model selection, generation fan-out, and the
+four-round tournament state machine (semi1, semi2 → final, third-place)."""
+from __future__ import annotations
+
+import asyncio
+import random
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from ..config import get_settings
+from ..models import ArenaModel, Battle, Generation, Match, User, Vote, utcnow
+from .providers import ProviderNotConfigured, get_provider_for
+
+ROUNDS = ["semi1", "semi2", "final", "third"]
+
+
+class ArenaError(Exception):
+    pass
+
+
+def pick_models(db: Session, count: int | None = None) -> list[ArenaModel]:
+    count = count or get_settings().models_per_battle
+    active = list(db.scalars(select(ArenaModel).where(ArenaModel.active.is_(True))))
+    if len(active) < count:
+        raise ArenaError(f"Need at least {count} active models in the roster; found {len(active)}. Run the seed script.")
+    return random.sample(active, count)
+
+
+async def create_battle(db: Session, user: User | None, prompt: str, category: str) -> Battle:
+    models = pick_models(db)
+    battle = Battle(user_id=user.id if user else None, category=category, prompt=prompt, status="generating")
+    db.add(battle)
+    db.flush()
+
+    provider_calls = [get_provider_for(m).generate(m, prompt, category) for m in models]
+    results = await asyncio.gather(*provider_calls, return_exceptions=True)
+
+    failures = [r for r in results if isinstance(r, BaseException)]
+    if failures:
+        db.rollback()
+        first = failures[0]
+        if isinstance(first, ProviderNotConfigured):
+            raise ArenaError(str(first))
+        raise ArenaError(f"Generation failed: {first}")
+
+    # Positions are shuffled so slot letters carry no information about models.
+    order = list(range(len(models)))
+    random.shuffle(order)
+    gens: list[Generation] = [None] * len(models)  # type: ignore[list-item]
+    for model, result, pos in zip(models, results, order):
+        g = Generation(
+            battle_id=battle.id,
+            model_id=model.id,
+            position=pos,
+            html=result.html,
+            latency_ms=result.latency_ms,
+            status="complete",
+        )
+        db.add(g)
+        gens[pos] = g
+    db.flush()
+
+    db.add(Match(battle_id=battle.id, round="semi1", order_index=0, a_generation_id=gens[0].id, b_generation_id=gens[1].id))
+    db.add(Match(battle_id=battle.id, round="semi2", order_index=1, a_generation_id=gens[2].id, b_generation_id=gens[3].id))
+    db.add(Match(battle_id=battle.id, round="final", order_index=2))
+    db.add(Match(battle_id=battle.id, round="third", order_index=3))
+
+    battle.status = "voting"
+    db.commit()
+    db.refresh(battle)
+    return battle
+
+
+def current_match(battle: Battle) -> Match | None:
+    for m in battle.matches:
+        if m.winner_generation_id is None and m.a_generation_id and m.b_generation_id:
+            return m
+    return None
+
+
+def record_vote(db: Session, battle: Battle, user: User | None, match_id: int, winner_generation_id: int) -> Battle:
+    if battle.status != "voting":
+        raise ArenaError("This battle is not accepting votes.")
+    match = next((m for m in battle.matches if m.id == match_id), None)
+    if match is None:
+        raise ArenaError("Match not found in this battle.")
+    active = current_match(battle)
+    if active is None or active.id != match.id:
+        raise ArenaError("Votes must be cast on the current match, in bracket order.")
+    if winner_generation_id not in (match.a_generation_id, match.b_generation_id):
+        raise ArenaError("Winner must be one of the two designs in this match.")
+
+    match.winner_generation_id = winner_generation_id
+    match.decided_at = utcnow()
+
+    gen_by_id = {g.id: g for g in battle.generations}
+    winner_gen = gen_by_id[winner_generation_id]
+    loser_id = match.b_generation_id if winner_generation_id == match.a_generation_id else match.a_generation_id
+    loser_gen = gen_by_id[loser_id]
+
+    db.add(
+        Vote(
+            battle_id=battle.id,
+            match_id=match.id,
+            user_id=user.id if user else None,
+            category=battle.category,
+            winner_model_id=winner_gen.model_id,
+            loser_model_id=loser_gen.model_id,
+        )
+    )
+
+    _advance_bracket(battle)
+
+    if all(m.winner_generation_id is not None for m in battle.matches):
+        battle.status = "complete"
+        battle.completed_at = utcnow()
+
+    db.commit()
+    db.refresh(battle)
+    return battle
+
+
+def _advance_bracket(battle: Battle) -> None:
+    by_round = {m.round: m for m in battle.matches}
+    semi1, semi2 = by_round.get("semi1"), by_round.get("semi2")
+    final, third = by_round.get("final"), by_round.get("third")
+    if not (semi1 and semi2 and final and third):
+        return
+    if semi1.winner_generation_id and semi2.winner_generation_id and final.a_generation_id is None:
+        final.a_generation_id = semi1.winner_generation_id
+        final.b_generation_id = semi2.winner_generation_id
+        third.a_generation_id = _loser_of(semi1)
+        third.b_generation_id = _loser_of(semi2)
+
+
+def _loser_of(match: Match) -> int:
+    return match.b_generation_id if match.winner_generation_id == match.a_generation_id else match.a_generation_id
