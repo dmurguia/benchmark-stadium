@@ -11,6 +11,8 @@ sys.path.insert(0, str(BACKEND))
 _TEST_DB = BACKEND / "test_designarena.db"
 os.environ["DESIGNARENA_DATABASE_URL"] = f"sqlite:///{_TEST_DB}"
 os.environ["DESIGNARENA_GENERATION_MODE"] = "sample"
+# Tests vote instantly; disable the behavioral timing floor.
+os.environ["DESIGNARENA_MIN_DECISION_MS"] = "0"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

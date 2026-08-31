@@ -14,7 +14,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 
 class Settings:
     def __init__(self) -> None:
-        self.app_name = "Design Arena (recreation)"
+        self.app_name = "Benchmark Stadium"
         # SQLite by default so the app runs with zero infra; swap for Postgres
         # by setting DESIGNARENA_DATABASE_URL=postgresql+psycopg://...
         self.database_url = os.getenv(
@@ -47,6 +47,10 @@ class Settings:
 
         # Bootstrap resamples for leaderboard confidence intervals.
         self.ci_bootstrap_rounds = int(os.getenv("DESIGNARENA_CI_ROUNDS", "40"))
+
+        # Behavioral floor: votes decided faster than this many ms are recorded
+        # but excluded from published boards.
+        self.min_decision_ms = int(os.getenv("DESIGNARENA_MIN_DECISION_MS", "4000"))
 
 
 @lru_cache

@@ -138,3 +138,81 @@ recent champions by category.
 Admin path to add a roster model: provisional rating, min-vote threshold before public
 listing, active/inactive toggles surfaced in an admin UI instead of DB edits.
 *Labels: backend, admin · Priority: Low · Estimate: 2*
+
+---
+
+## v2 pivot — Benchmark Stadium (shipped)
+
+### BS-1 · Vertical + scenario taxonomy (Legal, Finance/ERP)
+Replace design categories with two accountability-filtered verticals and four task
+types (contract-redline, clause-risk, journal-entry, coa-mapping); synthetic scenario
+library with structured facts (planted issues, expected postings, mapping keys).
+*Labels: backend, product · Estimate: 2*
+
+### BS-2 · Professional work-product generator with quality tiers
+Offline generator drafting redlines (<del>/<ins>), risk memos, journal entries, CoA
+mappings as paper-styled HTML docs; latent per-model quality changes substance
+(issues caught, accounts chosen); deterministic per (model, scenario).
+*Labels: backend, generation · Estimate: 3*
+
+### BS-3 · Calibration traps (gold-standard checks)
+Every session hides one comparison vs. a deliberately broken artifact (unbalanced
+entry, swapped parties, absurd mappings); outcomes recorded in trap_results, scoring
+the rater — never the models; positions and slots shuffled to prevent leakage.
+*Labels: backend, trust · Estimate: 2*
+
+### BS-4 · Credential tiers + weighted verified boards
+Tier from email domain at signup (free-mail 0 / work domain 1; license 2 and named 3
+as upgrade placeholders); votes carry tier weight + server-side decision_ms;
+behavioral timing floor (DESIGNARENA_MIN_DECISION_MS); weighted Bradley–Terry fit;
+published snapshots use counted, weight ≥ 1 votes only.
+*Labels: backend, trust · Estimate: 3*
+
+### BS-5 · Reviewer record (the reviewer's payoff)
+/api/auth/reviewer + profile page: calibration score from traps, consensus agreement
+vs. verified peers on identical pairs, percentile among raters, badge ladder
+(Apprentice → Calibrated → Top Reviewer), tier explanation.
+*Labels: backend, frontend, growth · Estimate: 2*
+
+### BS-6 · Frontend pivot
+Repositioned home ("Which AI is actually good at your job?"), vertical/task/scenario
+picker, onboarding modal (vertical + role), 5-comparison judging UI with document
+panels, reveal with calibration card, vertical-grouped leaderboard with trust
+methodology, reviewer profile page.
+*Labels: frontend · Estimate: 3*
+
+### BS-7 · Tests + browser QA for the pivot
+15 backend tests (flow incl. trap, tier detection, weighted snapshots, reviewer
+stats, catalog); Playwright run through sign-up → onboarding → session → reveal →
+boards → profile with screenshot review.
+*Labels: quality · Estimate: 2*
+
+## v2 backlog
+
+### BS-8 · Describe-don't-disclose scenario synthesis
+User describes their situation ("SaaS vendor paper, customer side, aggressive
+liability caps"); the generator synthesizes a parallel synthetic document to battle
+on. The privacy-preserving BYOD path.
+*Labels: backend, product · Priority: High · Estimate: 3*
+
+### BS-9 · License verification integrations
+Bar number / CPA / SAP cert checks to upgrade raters to tier 2; admin flow for named
+tier-3 reviewers.
+*Labels: backend, trust · Priority: High · Estimate: 3*
+
+### BS-10 · Rater-level reliability weighting
+Bradley–Terry on raters: agreement with traps + verified-peer consensus becomes a
+continuous vote weight; astroturf pattern detection (one-model favoritism across
+categories).
+*Labels: pipeline, trust · Priority: Medium · Estimate: 3*
+
+### BS-11 · Per-firm private arena (the enterprise product)
+Firm workspace: their scenarios, named reviewers, private board, benchmark
+certificate readout (discrimination, expert agreement, coverage). The sales motion
+this prototype rehearses.
+*Labels: product, enterprise · Priority: High · Estimate: 5*
+
+### BS-12 · Morning docket
+One comparison a day by email — two-minute ritual for busy professionals; streaks
+and calibration progress in the digest.
+*Labels: growth · Priority: Medium · Estimate: 2*

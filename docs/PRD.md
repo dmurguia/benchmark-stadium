@@ -1,7 +1,65 @@
-# PRD — Design Arena recreation
+# PRD — Benchmark Stadium
 
-**Status:** v1 shipped (this branch) · **Owner:** David Murguia · **Author:** Claude (PM/eng pass)
-**Date:** 2026-08-30
+**Status:** v2 pivot shipped · **Owner:** David Murguia · **Author:** Claude (PM/eng pass)
+**Date:** 2026-08-31 (v2) · 2026-08-30 (v1)
+
+---
+
+# v2 — The professional work arena (current)
+
+## Thesis
+
+Design Arena's primitive is cheap universal judgment at consumer scale; ours is the
+opposite: **scarce, attributed, expert judgment on accountable work** — the quadrant
+consumer arenas structurally cannot enter. The product is the arena loop applied to
+professional work product, with a trust layer that makes every vote attributable and
+weighable, in service of the larger strategy: certified custom benchmarks
+(per-firm mini-arenas + benchmark certificates) sold to enterprises, with vendor-side
+revenue later.
+
+## Scope decisions (v2 prototype)
+
+- **Two verticals, chosen by the "accountability filter"** (expert-only judgment ×
+  high stakes): **Legal** (contract-redline, clause-risk) and **Finance/ERP**
+  (journal-entry, coa-mapping). More verticals are a playbook, not a rebuild.
+- **"We bring the doc."** All scenarios are synthetic matters with planted issues —
+  the sensitivity objection is solved by never needing an upload. BYOD
+  (describe-don't-disclose synthesis, sanitize-assist) is deliberately out of the MVP.
+- **Session = 5 comparisons**: two opening rounds, one hidden calibration trap,
+  top + consolation match. ~5 minutes for a professional.
+- **The reviewer's payoff is baked in** (the "what's in it for her" answer):
+  a calibration score from hidden gold-standard checks, a portable badge
+  ("Calibrated Reviewer", percentile), consensus agreement vs. peers, and early
+  intelligence on which models handle their work. Ten minutes a week maintains it.
+- **Trust layer shipped, not promised**: credential tiers from email domain
+  (free-mail = tier 0, directional only; work domain = tier 1, full weight; license =
+  tier 2 and named reviewer = tier 3 as upgrade placeholders), weighted BT fit,
+  behavioral timing floor, trap results per rater, verified-only published boards.
+- **Work products are genuinely gradeable.** The offline generator gives each model a
+  latent quality level that changes *substance* (issues caught, accounts chosen,
+  ratings right) — so a professional's pick is a real judgment, and broken trap
+  artifacts (unbalanced entries, swapped parties) are objectively wrong.
+
+## Out of scope (v2, deliberate)
+
+Bring-your-own-document; license-verification integrations (bar/CPA/SAP lookups);
+rater-level Bradley–Terry reliability weighting (trap pass-rate stands in); vendor
+astroturf detection beyond blindness + shuffling; per-firm private arenas (the
+enterprise product this prototype rehearses); live model generation (adapters exist
+behind placeholder keys).
+
+## v2 success criteria (all verified)
+
+- Full loop in a real browser: sign-in (work-domain → tier 1) → onboarding
+  (vertical + role) → scenario battle → 5 comparisons incl. trap → reveal with
+  calibration result → board moves → reviewer record page.
+- 15/15 backend tests: flow, bracket order, trap accounting, tier detection,
+  weighted verified snapshots, reviewer stats, catalog.
+- Zero-credential demo from a clean checkout.
+
+---
+
+# v1 — Design Arena recreation (superseded)
 
 ## 1. Context
 

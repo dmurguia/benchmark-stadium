@@ -11,22 +11,27 @@ export default function Nav() {
     <header className="sticky top-0 z-20 border-b border-ink-800 bg-ink-950/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-tight">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-arena text-base">⚔️</span>
-          Design Arena
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-arena text-base">🏟️</span>
+          Benchmark Stadium
           <span className="rounded-full border border-ink-700 px-2 py-0.5 text-[10px] font-normal uppercase tracking-widest text-ink-400">
-            recreation
+            prototype
           </span>
         </Link>
         <nav className="flex items-center gap-1">
           <NavLink to="/" className={navCls} end>
-            Create
+            Judge
           </NavLink>
           <NavLink to="/leaderboard" className={navCls}>
             Leaderboard
           </NavLink>
           {user && (
             <NavLink to="/history" className={navCls}>
-              My battles
+              My sessions
+            </NavLink>
+          )}
+          {user && (
+            <NavLink to="/profile" className={navCls}>
+              My record
             </NavLink>
           )}
           {user ? (

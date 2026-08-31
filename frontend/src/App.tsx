@@ -5,6 +5,7 @@ import History from "./pages/History";
 import Home from "./pages/Home";
 import Leaderboard from "./pages/Leaderboard";
 import Login from "./pages/Login";
+import Profile from "./pages/Profile";
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/battle/:publicId" element={<Battle />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/history" element={<History />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </div>
   );

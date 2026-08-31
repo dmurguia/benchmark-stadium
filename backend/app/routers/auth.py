@@ -6,12 +6,22 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..categories import VERTICALS
 from ..config import get_settings
 from ..db import get_db
 from ..deps import SESSION_COOKIE, get_current_user
 from ..models import AuthCode, User, utcnow
-from ..schemas import RequestCodeIn, RequestCodeOut, SessionOut, UserOut, VerifyCodeIn
+from ..schemas import (
+    ProfileIn,
+    RequestCodeIn,
+    RequestCodeOut,
+    ReviewerStatsOut,
+    SessionOut,
+    UserOut,
+    VerifyCodeIn,
+)
 from ..security import generate_login_code, sign_session
+from ..services.reviewer import reviewer_stats, tier_for_email
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -47,7 +57,8 @@ def verify(payload: VerifyCodeIn, response: Response, db: Session = Depends(get_
 
     user = db.scalars(select(User).where(User.email == email)).first()
     if user is None:
-        user = User(email=email, display_name=email.split("@")[0])
+        # Credential tier from the email domain: work domains verify cheaply.
+        user = User(email=email, display_name=email.split("@")[0], tier=tier_for_email(email))
         db.add(user)
         db.flush()
     db.commit()
@@ -66,6 +77,26 @@ def verify(payload: VerifyCodeIn, response: Response, db: Session = Depends(get_
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(get_current_user)) -> UserOut:
     return UserOut.model_validate(user)
+
+
+@router.post("/profile", response_model=UserOut)
+def set_profile(
+    payload: ProfileIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> UserOut:
+    if payload.vertical not in VERTICALS:
+        raise HTTPException(status_code=400, detail=f"Unknown vertical '{payload.vertical}'.")
+    user.vertical = payload.vertical
+    user.role = payload.role.strip()
+    db.commit()
+    db.refresh(user)
+    return UserOut.model_validate(user)
+
+
+@router.get("/reviewer", response_model=ReviewerStatsOut)
+def reviewer(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> ReviewerStatsOut:
+    return ReviewerStatsOut(**reviewer_stats(db, user))
 
 
 @router.post("/logout")

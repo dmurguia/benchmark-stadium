@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Monogram from "../components/Monogram";
-import { api, type CategoryOut, type LeaderboardEntryOut, type LeaderboardOut } from "../lib/api";
+import { api, type CategoryOut, type LeaderboardEntryOut, type LeaderboardOut, type VerticalOut } from "../lib/api";
 
 function Delta({ entry }: { entry: LeaderboardEntryOut }) {
   if (entry.is_new) {
@@ -13,12 +13,14 @@ function Delta({ entry }: { entry: LeaderboardEntryOut }) {
 }
 
 export default function Leaderboard() {
+  const [verticals, setVerticals] = useState<VerticalOut[]>([]);
   const [categories, setCategories] = useState<CategoryOut[]>([]);
   const [active, setActive] = useState("overall");
   const [board, setBoard] = useState<LeaderboardOut | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    api<VerticalOut[]>("/api/verticals").then(setVerticals).catch(() => {});
     api<CategoryOut[]>("/api/categories").then(setCategories).catch(() => {});
   }, []);
 
@@ -30,7 +32,15 @@ export default function Leaderboard() {
       .finally(() => setLoading(false));
   }, [active]);
 
-  const tabs = [{ slug: "overall", name: "Overall" }, ...categories];
+  const groups = useMemo(
+    () =>
+      verticals.map((v) => ({
+        vertical: v,
+        categories: categories.filter((c) => c.vertical === v.slug),
+      })),
+    [verticals, categories],
+  );
+
   const entries = board?.entries ?? [];
   const maxRating = entries[0]?.rating ?? 1;
   const minRating = entries[entries.length - 1]?.rating ?? 0;
@@ -40,22 +50,40 @@ export default function Leaderboard() {
     <main className="mx-auto max-w-5xl px-4 pb-24 pt-10">
       <h1 className="font-display text-3xl font-bold">Leaderboard</h1>
       <p className="mt-2 max-w-2xl text-ink-400">
-        Live rankings from blind pairwise votes. Recomputed the moment a battle finishes.
+        Live rankings from blind judgments by verified professionals. Recomputed the moment a review
+        session finishes.
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
-        {tabs.map((t) => (
-          <button
-            key={t.slug}
-            onClick={() => setActive(t.slug)}
-            className={`rounded-full border px-4 py-1.5 text-sm transition ${
-              active === t.slug
-                ? "border-arena bg-arena/20 text-arena-bright"
-                : "border-ink-700 text-ink-400 hover:border-ink-600 hover:text-ink-200"
-            }`}
-          >
-            {t.name}
-          </button>
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <button
+          onClick={() => setActive("overall")}
+          className={`rounded-full border px-4 py-1.5 text-sm transition ${
+            active === "overall"
+              ? "border-arena bg-arena/20 text-arena-bright"
+              : "border-ink-700 text-ink-400 hover:border-ink-600 hover:text-ink-200"
+          }`}
+        >
+          Overall
+        </button>
+        {groups.map(({ vertical, categories: cats }) => (
+          <span key={vertical.slug} className="flex items-center gap-2">
+            <span className="ml-2 text-xs uppercase tracking-widest text-ink-600">
+              {vertical.icon} {vertical.name}
+            </span>
+            {cats.map((c) => (
+              <button
+                key={c.slug}
+                onClick={() => setActive(c.slug)}
+                className={`rounded-full border px-4 py-1.5 text-sm transition ${
+                  active === c.slug
+                    ? "border-arena bg-arena/20 text-arena-bright"
+                    : "border-ink-700 text-ink-400 hover:border-ink-600 hover:text-ink-200"
+                }`}
+              >
+                {c.name}
+              </button>
+            ))}
+          </span>
         ))}
       </div>
 
@@ -87,7 +115,7 @@ export default function Leaderboard() {
         {loading ? (
           <p className="p-8 text-center text-ink-400">Loading…</p>
         ) : entries.length === 0 ? (
-          <p className="p-8 text-center text-ink-400">No votes in this category yet — start a battle.</p>
+          <p className="p-8 text-center text-ink-400">No judgments in this board yet — run a review session.</p>
         ) : (
           <table className="w-full min-w-[720px] text-left text-sm">
             <thead>
@@ -97,7 +125,7 @@ export default function Leaderboard() {
                 <th className="px-4 py-3">Model</th>
                 <th className="px-4 py-3">Score</th>
                 <th className="px-4 py-3">95% CI</th>
-                <th className="px-4 py-3">Votes</th>
+                <th className="px-4 py-3">Judgments</th>
                 <th className="px-4 py-3">Win rate</th>
               </tr>
             </thead>
@@ -149,27 +177,27 @@ export default function Leaderboard() {
 
       {board?.computed_at && (
         <p className="mt-3 text-xs text-ink-400">
-          {board.vote_count.toLocaleString()} votes · last computed {new Date(board.computed_at).toLocaleString()} ·
-          algo: {board.algo}
+          {board.vote_count.toLocaleString()} verified judgments · last computed{" "}
+          {new Date(board.computed_at).toLocaleString()} · algo: {board.algo}
         </p>
       )}
 
       <div className="card mt-8 p-6">
-        <h2 className="font-display text-lg font-bold">Methodology</h2>
+        <h2 className="font-display text-lg font-bold">How this board stays honest</h2>
         <div className="mt-3 grid gap-4 text-sm leading-relaxed text-ink-400 sm:grid-cols-3">
           <p>
-            <b className="text-ink-200">Blind pairwise votes.</b> Every battle draws four models at random; you judge
-            head-to-head matches without knowing which model made which design. Each choice is one vote.
+            <b className="text-ink-200">Verified votes only.</b> Judgments are weighted by credential tier
+            — work-domain verified and up count; self-declared accounts are directional only and never
+            reach this board.
           </p>
           <p>
-            <b className="text-ink-200">Bradley–Terry ratings.</b> Votes fit a Bradley–Terry model, mapped to an
-            Elo-style scale anchored at 1200. Intervals are 95% bootstrap bands — overlapping bands mean the order
-            isn't settled yet.
+            <b className="text-ink-200">Hidden quality checks.</b> Every session includes a comparison
+            with an objectively flawed work product. Raters who miss them lose weight; bots never gain it.
           </p>
           <p>
-            <b className="text-ink-200">Live snapshots.</b> The board is a materialized snapshot, recomputed in the
-            background the moment a battle completes and by a batch pipeline. Δ shows movement since the previous
-            snapshot.
+            <b className="text-ink-200">Bradley–Terry, snapshotted.</b> Weighted pairwise votes fit a
+            Bradley–Terry model (1200 anchor, bootstrap 95% bands), materialized as snapshots. Δ shows
+            movement since the previous snapshot.
           </p>
         </div>
       </div>

@@ -20,3 +20,15 @@ Title,Description,Status,Priority,Labels,Estimate
 "DA-19 Share pages and winners gallery","Public read-only battle page (prompt, bracket, revealed designs), OG images, gallery of recent champions by category.",Backlog,Medium,"frontend,growth",3
 "DA-20 New-model onboarding flow","Admin path to add a roster model: provisional rating, min-vote threshold before listing, active/inactive toggles in an admin UI.",Backlog,Low,"backend,admin",2
 "DA-21 Design fidelity pass v2 (match designarena.ai closer)","Generating intro phase, icon category grid, stats row, bracket visualization, leaderboard podium + movement deltas + methodology, fullscreen expand, typography, brand-name extraction, website/chart/logo variants.",Done,High,"frontend,backend,design",3
+"BS-1 Vertical + scenario taxonomy (Legal, Finance/ERP)","Two accountability-filtered verticals, four task types, synthetic scenario library with structured facts (planted issues, expected postings, mapping keys).",Done,High,"backend,product",2
+BS-2 Professional work-product generator with quality tiers,"Offline generator drafting redlines, risk memos, journal entries, CoA mappings as paper-styled HTML; latent per-model quality changes substance; deterministic per (model, scenario).",Done,High,"backend,generation",3
+BS-3 Calibration traps (gold-standard checks),"Hidden comparison vs deliberately broken artifact per session; trap_results score the rater, never the models; positions/slots shuffled.",Done,Urgent,"backend,trust",2
+BS-4 Credential tiers + weighted verified boards,Tier from email domain; votes carry weight + server-side decision_ms; timing floor; weighted Bradley-Terry; published snapshots use counted weight>=1 votes only.,Done,Urgent,"backend,trust",3
+BS-5 Reviewer record (the reviewer's payoff),"Calibration score, consensus agreement, percentile, badge ladder, tier explanation - the what's-in-it-for-the-reviewer loop.",Done,High,"backend,frontend,growth",2
+BS-6 Frontend pivot,"Repositioned home, vertical/task/scenario picker, onboarding modal, 5-comparison judging UI, reveal with calibration card, vertical-grouped leaderboard, profile page.",Done,High,frontend,3
+BS-7 Tests + browser QA for the pivot,15 backend tests; Playwright run through the full new flow with screenshot review.,Done,High,quality,2
+BS-8 Describe-don't-disclose scenario synthesis,Synthesize a parallel synthetic document from a user's description - the privacy-preserving BYOD path.,Backlog,High,"backend,product",3
+BS-9 License verification integrations,Bar/CPA/SAP cert checks to tier 2; admin flow for named tier-3 reviewers.,Backlog,High,"backend,trust",3
+BS-10 Rater-level reliability weighting,BT on raters from trap + consensus agreement as continuous vote weight; astroturf pattern detection.,Backlog,Medium,"pipeline,trust",3
+BS-11 Per-firm private arena (the enterprise product),"Firm workspace: their scenarios, named reviewers, private board, benchmark certificate readout.",Backlog,High,"product,enterprise",5
+BS-12 Morning docket,One comparison a day by email; streaks and calibration progress in the digest.,Backlog,Medium,growth,2

@@ -1,31 +1,45 @@
-"""Arena categories. Kept in code — adding one is a deploy, matching how the
-real product gates categories on prompt templates + judge support."""
+"""Verticals and task types (v2 pivot: professional work arena).
+
+Two launch verticals — Legal and Finance/ERP — chosen because their work is
+expert-judged, high-stakes, and document-shaped: exactly where crowd arenas
+can't follow. Each category is a *task type* whose outputs a professional can
+judge in 2–5 minutes.
+"""
 from __future__ import annotations
 
+VERTICALS: dict[str, dict[str, str]] = {
+    "legal": {
+        "name": "Legal",
+        "icon": "⚖️",
+        "blurb": "Contract work judged the way a supervising partner would.",
+    },
+    "finance": {
+        "name": "Finance / ERP",
+        "icon": "🧾",
+        "blurb": "Accounting operations judged the way a controller would.",
+    },
+}
+
 CATEGORIES: dict[str, dict[str, str]] = {
-    "website": {
-        "name": "Website",
-        "blurb": "Landing pages and full sites, judged on layout, hierarchy, and polish.",
+    "contract-redline": {
+        "vertical": "legal",
+        "name": "Contract Redline",
+        "blurb": "Markups of an NDA against standard positions — judged on issues caught and edit quality.",
     },
-    "ui-component": {
-        "name": "UI Component",
-        "blurb": "Single components — cards, forms, pickers — judged on craft and usability.",
+    "clause-risk": {
+        "vertical": "legal",
+        "name": "Clause Risk Review",
+        "blurb": "Risk assessment of contract clauses — judged on ratings and rationale.",
     },
-    "dataviz": {
-        "name": "Data Viz",
-        "blurb": "Charts and dashboards, judged on clarity and visual encoding.",
+    "journal-entry": {
+        "vertical": "finance",
+        "name": "Journal Entries",
+        "blurb": "Entries for a described transaction — judged on accounts, balance, and memos.",
     },
-    "game": {
-        "name": "Game",
-        "blurb": "Playable browser mini-games, judged on fun and feel.",
-    },
-    "svg-logo": {
-        "name": "Logo / SVG",
-        "blurb": "Vector marks and illustrations, judged on concept and execution.",
-    },
-    "ascii-art": {
-        "name": "ASCII Art",
-        "blurb": "Terminal-style art, judged on ingenuity within the medium.",
+    "coa-mapping": {
+        "vertical": "finance",
+        "name": "Account Mapping",
+        "blurb": "Legacy chart-of-accounts mapped to a new one — judged on mapping accuracy.",
     },
 }
 
@@ -34,3 +48,7 @@ OVERALL = "overall"
 
 def is_valid_category(slug: str) -> bool:
     return slug in CATEGORIES
+
+
+def categories_for(vertical: str) -> list[str]:
+    return [slug for slug, c in CATEGORIES.items() if c["vertical"] == vertical]

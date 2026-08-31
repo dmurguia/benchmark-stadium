@@ -5,20 +5,12 @@ import Monogram from "../components/Monogram";
 import { api, type BattleOut, type GenerationOut, type MatchOut } from "../lib/api";
 
 const ROUND_LABELS: Record<string, string> = {
-  semi1: "Semifinal 1",
-  semi2: "Semifinal 2",
-  final: "Grand Final",
-  third: "Third-place match",
+  semi1: "Opening round",
+  semi2: "Opening round",
+  calibration: "Head-to-head",
+  final: "Top match",
+  third: "Consolation match",
 };
-
-const ROUND_SHORT: Record<string, string> = {
-  semi1: "SF1",
-  semi2: "SF2",
-  final: "Final",
-  third: "3rd",
-};
-
-const POSITION_LETTERS = ["A", "B", "C", "D"];
 
 export default function Battle() {
   const { publicId } = useParams<{ publicId: string }>();
@@ -34,13 +26,14 @@ export default function Battle() {
     if (!publicId) return;
     api<BattleOut>(`/api/battles/${publicId}`)
       .then(setBattle)
-      .catch((e) => setError(e instanceof Error ? e.message : "Battle not found."));
+      .catch((e) => setError(e instanceof Error ? e.message : "Session not found."));
   }, [publicId]);
 
-  // "Models are generating" intro: stagger card reveals in latency order.
+  // "Models are working" intro: only the four bracket work products (positions 0–3).
   useEffect(() => {
     if (!intro || !battle) return;
-    const ordered = [...battle.generations].sort((a, b) => a.latency_ms - b.latency_ms);
+    const bracketGens = battle.generations.filter((g) => g.position <= 3);
+    const ordered = [...bracketGens].sort((a, b) => a.latency_ms - b.latency_ms);
     const timers = ordered.map((g, i) =>
       setTimeout(() => setRevealedIds((prev) => new Set(prev).add(g.id)), 650 + i * 700),
     );
@@ -107,39 +100,45 @@ export default function Battle() {
   }
 
   if (!battle) {
-    return <main className="mx-auto max-w-2xl px-4 pt-24 text-center text-ink-400">Loading battle…</main>;
+    return <main className="mx-auto max-w-2xl px-4 pt-24 text-center text-ink-400">Loading session…</main>;
   }
 
   if (intro && battle.status === "voting") {
+    const bracketGens = battle.generations.filter((g) => g.position <= 3);
     return (
       <main className="mx-auto max-w-6xl px-4 pb-16">
         <section className="pt-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-arena-bright">Round of 4 · generating</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-arena-bright">
+            Review session · drafting
+          </p>
           <h1 className="mt-2 font-display text-2xl font-bold sm:text-3xl">
-            Four models are designing “{battle.prompt}”
+            Five models are drafting this work product
           </h1>
-          <p className="mt-2 text-sm text-ink-400">Identities stay hidden until you've judged the whole bracket.</p>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-ink-400">“{battle.prompt}”</p>
+          <p className="mt-1 text-xs text-ink-600">
+            Identities stay hidden until you've judged all five comparisons.
+          </p>
         </section>
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {battle.generations.map((g) => {
+          {bracketGens.map((g, i) => {
             const done = revealedIds.has(g.id);
             return (
               <div key={g.id} className="card overflow-hidden">
                 <div className="flex items-center justify-between border-b border-ink-700 px-4 py-2.5 text-sm">
-                  <span className="font-semibold text-ink-200">Design {POSITION_LETTERS[g.position]}</span>
+                  <span className="font-semibold text-ink-200">Draft {i + 1}</span>
                   {done ? (
                     <span className="text-xs text-emerald-400">✓ finished in {(g.latency_ms / 1000).toFixed(1)}s</span>
                   ) : (
                     <span className="flex items-center gap-2 text-xs text-ink-400">
                       <span className="h-2 w-2 animate-pulse rounded-full bg-arena" />
-                      generating…
+                      drafting…
                     </span>
                   )}
                 </div>
                 <div className="aspect-[16/10]">
                   {done ? (
                     <div className="rise h-full">
-                      <DesignFrame battleId={battle.public_id} position={g.position} title={`Design ${POSITION_LETTERS[g.position]}`} />
+                      <DesignFrame battleId={battle.public_id} position={g.position} title={`Draft ${i + 1}`} />
                     </div>
                   ) : (
                     <div className="shimmer h-full" />
@@ -151,7 +150,7 @@ export default function Battle() {
         </div>
         <div className="mt-6 text-center">
           <button onClick={() => setIntro(false)} className="btn-ghost">
-            Skip to voting →
+            Skip to judging →
           </button>
         </div>
       </main>
@@ -167,14 +166,15 @@ export default function Battle() {
       <div className="flex flex-wrap items-center justify-between gap-2 py-3">
         <div>
           <div className="text-xs uppercase tracking-widest text-arena-bright">
-            {currentMatch ? ROUND_LABELS[currentMatch.round] : "Tournament"} · match {Math.min(decidedCount + 1, 4)} of 4
+            Comparison {Math.min(decidedCount + 1, 5)} of 5
+            {currentMatch ? ` · ${ROUND_LABELS[currentMatch.round]}` : ""}
           </div>
           <h1 className="max-w-3xl truncate font-display text-lg font-bold" title={battle.prompt}>
             “{battle.prompt}”
           </h1>
         </div>
         <div className="flex items-center gap-1.5">
-          {battle.matches.map((m) => (
+          {battle.matches.map((m, i) => (
             <span
               key={m.id}
               className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
@@ -185,7 +185,7 @@ export default function Battle() {
                     : "border-ink-700 text-ink-600"
               }`}
             >
-              {ROUND_SHORT[m.round]}
+              {i + 1}
             </span>
           ))}
         </div>
@@ -195,15 +195,16 @@ export default function Battle() {
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
           {[currentMatch.a_generation_id, currentMatch.b_generation_id].map((genId, i) => {
             const gen = genById.get(genId)!;
+            const label = i === 0 ? "A" : "B";
             return (
               <div key={genId} className="card flex min-h-[320px] flex-col overflow-hidden">
                 <div className="flex items-center justify-between border-b border-ink-700 px-4 py-2">
                   <span className="flex items-center gap-2 text-sm font-semibold text-ink-200">
                     <span className="flex h-6 w-6 items-center justify-center rounded-md bg-ink-700 font-display text-xs">
-                      {POSITION_LETTERS[gen.position]}
+                      {label}
                     </span>
-                    Design {POSITION_LETTERS[gen.position]}
-                    <span className="hidden text-xs font-normal text-ink-400 sm:inline">· model hidden</span>
+                    Work product {label}
+                    <span className="hidden text-xs font-normal text-ink-400 sm:inline">· author hidden</span>
                   </span>
                   <span className="flex items-center gap-2">
                     <button
@@ -214,32 +215,32 @@ export default function Battle() {
                       ⤢
                     </button>
                     <button onClick={() => vote(genId)} disabled={voting} className="btn-primary px-4 py-1.5 text-sm">
-                      Vote {i === 0 ? "←" : "→"}
+                      Prefer {i === 0 ? "←" : "→"}
                     </button>
                   </span>
                 </div>
-                <DesignFrame battleId={battle.public_id} position={gen.position} title={`Design ${POSITION_LETTERS[gen.position]}`} />
+                <DesignFrame battleId={battle.public_id} position={gen.position} title={`Work product ${label}`} />
               </div>
             );
           })}
         </div>
       ) : (
-        <p className="pt-12 text-center text-ink-400">Preparing the next match…</p>
+        <p className="pt-12 text-center text-ink-400">Preparing the next comparison…</p>
       )}
       <p className="pt-3 text-center text-xs text-ink-400">
-        Pick the better design — buttons or ← / → keys. Designs are live: scroll them, play them, then vote.
+        Read both drafts like you'd review an associate's work, then pick the better one — buttons or ← / → keys.
       </p>
 
       {expanded !== null && (
         <div className="fixed inset-0 z-50 flex flex-col bg-ink-950/95 p-4 backdrop-blur">
           <div className="mb-3 flex items-center justify-between">
-            <span className="font-display font-bold">Design {POSITION_LETTERS[expanded]} — full view</span>
+            <span className="font-display font-bold">Full view</span>
             <button onClick={() => setExpanded(null)} className="btn-ghost px-3 py-1.5 text-sm">
               ✕ Close (esc)
             </button>
           </div>
           <div className="card min-h-0 flex-1 overflow-hidden">
-            <DesignFrame battleId={battle.public_id} position={expanded} title="Expanded design" />
+            <DesignFrame battleId={battle.public_id} position={expanded} title="Expanded work product" />
           </div>
         </div>
       )}
@@ -261,10 +262,7 @@ function MatchCard({
     const gen = genById.get(id)!;
     const won = match.winner_generation_id === id;
     return (
-      <div
-        key={id}
-        className={`flex items-center justify-between gap-3 px-4 py-2.5 ${won ? "" : "opacity-45"}`}
-      >
+      <div key={id} className={`flex items-center justify-between gap-3 px-4 py-2.5 ${won ? "" : "opacity-45"}`}>
         <span className="flex min-w-0 items-center gap-2.5">
           <Monogram name={gen.model?.name ?? "?"} size={26} />
           <span className="truncate text-sm font-semibold">{gen.model?.name ?? "Unknown"}</span>
@@ -294,7 +292,7 @@ function Reveal({ battle, genById }: { battle: BattleOut; genById: Map<number, G
   const third = byRound.get("third");
 
   const standings: { place: string; medal: string; gen: GenerationOut | undefined }[] = [
-    { place: "Champion", medal: "🥇", gen: final?.winner_generation_id ? genById.get(final.winner_generation_id) : undefined },
+    { place: "Best work", medal: "🥇", gen: final?.winner_generation_id ? genById.get(final.winner_generation_id) : undefined },
     {
       place: "Runner-up",
       medal: "🥈",
@@ -309,20 +307,21 @@ function Reveal({ battle, genById }: { battle: BattleOut; genById: Map<number, G
   ];
 
   const champion = standings[0].gen;
+  const trapPassed = battle.trap_outcome?.passed;
 
   return (
     <main className="mx-auto max-w-6xl px-4 pb-24">
       <section className="pt-12 text-center">
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-arena-bright">The reveal</p>
         <h1 className="mt-2 font-display text-3xl font-bold sm:text-4xl">
-          {champion?.model?.name ?? "Champion"} takes it
+          {champion?.model?.name ?? "The winner"} wrote the best draft
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-ink-400">
-          “{battle.prompt}” — your votes are in the global rankings now.
+          “{battle.prompt}” — your judgments are in the rankings now.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Link to="/" className="btn-primary">
-            New battle
+            Judge another
           </Link>
           <Link to="/leaderboard" className="btn-ghost">
             View leaderboard
@@ -330,17 +329,38 @@ function Reveal({ battle, genById }: { battle: BattleOut; genById: Map<number, G
         </div>
       </section>
 
-      {/* bracket */}
+      {battle.trap_outcome && (
+        <div
+          className={`mx-auto mt-10 max-w-2xl rounded-2xl border p-5 text-center ${
+            trapPassed ? "border-emerald-500/40 bg-emerald-500/5" : "border-amber-500/40 bg-amber-500/5"
+          }`}
+        >
+          <div className="text-2xl">{trapPassed ? "🎯" : "🧐"}</div>
+          <div className="mt-1 font-display font-bold">
+            {trapPassed ? "Calibration check: passed" : "Calibration check: missed"}
+          </div>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-400">
+            {trapPassed
+              ? "One comparison secretly contained an objectively flawed work product — you caught it. This builds your calibration score."
+              : "One comparison secretly contained an objectively flawed work product (an unbalanced entry, a swapped party). You picked it — worth a second look on the next session."}
+          </p>
+          <Link to="/profile" className="mt-2 inline-block text-sm text-arena-bright hover:underline">
+            See your reviewer record →
+          </Link>
+        </div>
+      )}
+
+      {/* bracket (calibration match excluded — it scores you, not the models) */}
       <section className="mx-auto mt-12 max-w-3xl">
         <div className="grid items-center gap-4 sm:grid-cols-[1fr_auto_1fr]">
           <div className="flex flex-col gap-4">
-            <MatchCard match={byRound.get("semi1")} genById={genById} title="Semifinal 1" />
-            <MatchCard match={byRound.get("semi2")} genById={genById} title="Semifinal 2" />
+            <MatchCard match={byRound.get("semi1")} genById={genById} title="Opening round 1" />
+            <MatchCard match={byRound.get("semi2")} genById={genById} title="Opening round 2" />
           </div>
           <div className="hidden text-2xl text-ink-600 sm:block">→</div>
           <div className="flex flex-col gap-4">
-            <MatchCard match={final} genById={genById} title="Grand final" />
-            <MatchCard match={third} genById={genById} title="Third place" />
+            <MatchCard match={final} genById={genById} title="Top match" />
+            <MatchCard match={third} genById={genById} title="Consolation" />
           </div>
         </div>
       </section>
@@ -348,7 +368,7 @@ function Reveal({ battle, genById }: { battle: BattleOut; genById: Map<number, G
       <div className="mt-12 grid gap-4 sm:grid-cols-2">
         {standings.map(({ place, medal, gen }) =>
           gen ? (
-            <div key={place} className={`card overflow-hidden ${place === "Champion" ? "border-gold/60" : ""}`}>
+            <div key={place} className={`card overflow-hidden ${place === "Best work" ? "border-gold/60" : ""}`}>
               <div className="flex items-center justify-between border-b border-ink-700 px-4 py-3">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{medal}</span>
@@ -356,16 +376,13 @@ function Reveal({ battle, genById }: { battle: BattleOut; genById: Map<number, G
                   <div>
                     <div className="font-semibold">{gen.model?.name ?? "Unknown model"}</div>
                     <div className="text-xs text-ink-400">
-                      {gen.model?.organization} · {place} · generated in {(gen.latency_ms / 1000).toFixed(1)}s
+                      {gen.model?.organization} · {place} · drafted in {(gen.latency_ms / 1000).toFixed(1)}s
                     </div>
                   </div>
                 </div>
-                <span className="rounded-full border border-ink-700 px-2.5 py-0.5 text-xs text-ink-400">
-                  Design {POSITION_LETTERS[gen.position]}
-                </span>
               </div>
               <div className="aspect-video">
-                <DesignFrame battleId={battle.public_id} position={gen.position} title={`${place} design`} />
+                <DesignFrame battleId={battle.public_id} position={gen.position} title={`${place} work product`} />
               </div>
             </div>
           ) : null,

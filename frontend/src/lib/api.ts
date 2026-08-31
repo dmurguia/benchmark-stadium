@@ -49,12 +49,41 @@ export interface UserOut {
   id: number;
   email: string;
   display_name: string;
+  vertical: string;
+  role: string;
+  tier: number;
+}
+
+export interface VerticalOut {
+  slug: string;
+  name: string;
+  icon: string;
+  blurb: string;
 }
 
 export interface CategoryOut {
   slug: string;
+  vertical: string;
   name: string;
   blurb: string;
+}
+
+export interface ScenarioOut {
+  id: string;
+  title: string;
+  brief: string;
+}
+
+export interface ReviewerStatsOut {
+  votes_cast: number;
+  counted_votes: number;
+  traps_total: number;
+  traps_passed: number;
+  calibration_pct: number | null;
+  consensus_pct: number | null;
+  percentile: number | null;
+  badge: string;
+  tier: number;
 }
 
 export interface ArenaModelOut {
@@ -72,12 +101,14 @@ export interface GenerationOut {
   status: string;
   latency_ms: number;
   model: ArenaModelOut | null;
+  is_trap: boolean;
 }
 
 export interface MatchOut {
   id: number;
   round: string;
   order_index: number;
+  is_trap: boolean;
   a_generation_id: number | null;
   b_generation_id: number | null;
   winner_generation_id: number | null;
@@ -86,12 +117,14 @@ export interface MatchOut {
 export interface BattleOut {
   public_id: string;
   category: string;
+  scenario_id: string;
   prompt: string;
   status: string;
   created_at: string;
   generations: GenerationOut[];
   matches: MatchOut[];
   current_match_id: number | null;
+  trap_outcome: { passed: boolean } | null;
 }
 
 export interface BattleSummaryOut {

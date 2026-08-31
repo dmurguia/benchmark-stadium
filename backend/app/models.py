@@ -23,6 +23,13 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     display_name: Mapped[str] = mapped_column(String(120), default="")
+    # Reviewer identity: which vertical they judge in and what they do.
+    vertical: Mapped[str] = mapped_column(String(40), default="")
+    role: Mapped[str] = mapped_column(String(80), default="")
+    # Credential tier: 0 self-declared (free-mail) · 1 verified work domain ·
+    # 2 verified license/cert · 3 named invited reviewer. Published boards use
+    # tier >= 1 votes only.
+    tier: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
     battles: Mapped[list["Battle"]] = relationship(back_populates="user")
@@ -62,6 +69,7 @@ class Battle(Base):
     public_id: Mapped[str] = mapped_column(String(32), unique=True, index=True, default=new_public_id)
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
     category: Mapped[str] = mapped_column(String(40), index=True)
+    scenario_id: Mapped[str] = mapped_column(String(80), default="", index=True)
     prompt: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(20), default="voting")  # generating | voting | complete
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
@@ -83,6 +91,8 @@ class Generation(Base):
     html: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(20), default="complete")  # pending | complete | failed
     latency_ms: Mapped[int] = mapped_column(Integer, default=0)
+    # True only for the deliberately-broken calibration artifact in a trap match.
+    is_trap: Mapped[bool] = mapped_column(Boolean, default=False)
 
     battle: Mapped[Battle] = relationship(back_populates="generations")
     model: Mapped[ArenaModel] = relationship()
@@ -99,8 +109,10 @@ class Match(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     battle_id: Mapped[int] = mapped_column(ForeignKey("battles.id"), index=True)
-    round: Mapped[str] = mapped_column(String(12))
+    round: Mapped[str] = mapped_column(String(16))
     order_index: Mapped[int] = mapped_column(Integer)
+    # Calibration match: scores the rater, never the models.
+    is_trap: Mapped[bool] = mapped_column(Boolean, default=False)
     a_generation_id: Mapped[int | None] = mapped_column(ForeignKey("generations.id"), nullable=True)
     b_generation_id: Mapped[int | None] = mapped_column(ForeignKey("generations.id"), nullable=True)
     winner_generation_id: Mapped[int | None] = mapped_column(ForeignKey("generations.id"), nullable=True)
@@ -122,7 +134,26 @@ class Vote(Base):
     winner_model_id: Mapped[int] = mapped_column(ForeignKey("arena_models.id"), index=True)
     loser_model_id: Mapped[int] = mapped_column(ForeignKey("arena_models.id"), index=True)
     synthetic: Mapped[bool] = mapped_column(Boolean, default=False)  # seeded vs. real human vote
+    # Trust layer: weight comes from the rater's credential tier at cast time;
+    # counted=False marks votes that failed a behavioral floor (too fast).
+    weight: Mapped[float] = mapped_column(Float, default=1.0)
+    decision_ms: Mapped[int] = mapped_column(Integer, default=0)
+    counted: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class TrapResult(Base):
+    """Outcome of one calibration (gold-standard) match for one rater."""
+
+    __tablename__ = "trap_results"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    battle_id: Mapped[int] = mapped_column(ForeignKey("battles.id"), index=True)
+    match_id: Mapped[int] = mapped_column(ForeignKey("matches.id"), unique=True)
+    passed: Mapped[bool] = mapped_column(Boolean)
+    decision_ms: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class RatingSnapshot(Base):

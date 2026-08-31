@@ -1,8 +1,8 @@
-"""Ratings math: Bradley-Terry (MM algorithm) over pairwise votes.
+"""Ratings math: weighted Bradley-Terry (MM algorithm) over pairwise votes.
 
-This mirrors how the real arena products rank models: every vote is a pairwise
-outcome; BT strengths are fit by Hunter's minorization-maximization iteration
-and mapped onto an Elo-like scale anchored at 1200 so scores read familiarly.
+Every vote is a pairwise outcome carrying a weight from the rater's credential
+tier; BT strengths are fit by Hunter's minorization-maximization iteration and
+mapped onto an Elo-like scale anchored at 1200 so scores read familiarly.
 Confidence intervals come from bootstrap resampling of the vote set.
 """
 from __future__ import annotations
@@ -14,6 +14,9 @@ from dataclasses import dataclass
 
 ANCHOR = 1200.0
 SCALE = 400.0  # Elo-style: +400 rating ≈ 10x BT strength
+
+# (winner_model_id, loser_model_id, weight)
+Pair = tuple[int, int, float]
 
 
 @dataclass
@@ -28,20 +31,26 @@ class RatingRow:
     rank: int = 0
 
 
-def _fit_bt(pairs: list[tuple[int, int]], iters: int = 200, tol: float = 1e-9) -> dict[int, float]:
-    """Fit Bradley-Terry strengths from (winner_id, loser_id) pairs via MM.
+def _normalize(pairs: list) -> list[Pair]:
+    return [(p[0], p[1], float(p[2]) if len(p) > 2 else 1.0) for p in pairs]
+
+
+def _fit_bt(pairs: list[Pair], iters: int = 200, tol: float = 1e-9) -> dict[int, float]:
+    """Fit Bradley-Terry strengths from weighted (winner, loser, w) pairs via MM.
 
     Returns strengths normalized to geometric mean 1.0.
     """
     models: set[int] = set()
     wins: dict[int, float] = defaultdict(float)
     games: dict[tuple[int, int], float] = defaultdict(float)
-    for w, l in pairs:
+    for w, l, wt in pairs:
+        if wt <= 0:
+            continue
         models.add(w)
         models.add(l)
-        wins[w] += 1
+        wins[w] += wt
         key = (min(w, l), max(w, l))
-        games[key] += 1
+        games[key] += wt
 
     if not models:
         return {}
@@ -60,15 +69,12 @@ def _fit_bt(pairs: list[tuple[int, int]], iters: int = 200, tol: float = 1e-9) -
         for m in models:
             denom = 0.0
             for (a, b), n in games.items():
-                if m == a:
-                    denom += n / (p[a] + p[b])
-                elif m == b:
+                if m == a or m == b:
                     denom += n / (p[a] + p[b])
             if denom <= 0:
                 new_p[m] = p[m]
                 continue
             new_p[m] = wins[m] / denom
-        # normalize to geometric mean 1
         log_mean = sum(math.log(v) for v in new_p.values() if v > 0) / len(new_p)
         norm = math.exp(log_mean)
         for m in new_p:
@@ -87,11 +93,13 @@ def strength_to_rating(strength: float) -> float:
 
 
 def compute_ratings(
-    pairs: list[tuple[int, int]],
+    pairs: list,
     bootstrap_rounds: int = 40,
     seed: int = 7,
 ) -> list[RatingRow]:
-    """Compute ranked rating rows from (winner_model_id, loser_model_id) pairs."""
+    """Compute ranked rating rows from (winner, loser[, weight]) pairs."""
+    pairs = _normalize(pairs)
+    pairs = [p for p in pairs if p[2] > 0]
     if not pairs:
         return []
 
@@ -99,7 +107,7 @@ def compute_ratings(
 
     wins: dict[int, int] = defaultdict(int)
     losses: dict[int, int] = defaultdict(int)
-    for w, l in pairs:
+    for w, l, _ in pairs:
         wins[w] += 1
         losses[l] += 1
 
