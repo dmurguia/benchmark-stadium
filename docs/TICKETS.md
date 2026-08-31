@@ -216,3 +216,42 @@ this prototype rehearses.
 One comparison a day by email — two-minute ritual for busy professionals; streaks
 and calibration progress in the digest.
 *Labels: growth · Priority: Medium · Estimate: 2*
+
+### BS-13 · Prompt-first front door (pre-signup taste)
+Replace the scenario-picker-only entry with a prompt box: "describe the work" matches
+or synthesizes a scenario and drops the visitor into ONE blind comparison immediately,
+playable before signup; signup is the price of recording the score and continuing the
+full session. Pulls BS-8 (describe-don't-disclose) forward as the door mechanism.
+No daily-puzzle framing.
+*Labels: frontend, growth · Priority: Urgent · Estimate: 3*
+
+### BS-14 · Medical coding & clinical documentation vertical
+Vertical 3. Task types: E/M coding of a clinical note (ICD-10/CPT keyed — traps and
+scoring half-deterministic), prior-auth appeal letters, denial-response letters.
+Strongest certification culture (CPC/CCS), 2–5 min units, chronic churn → training
+demand. Scenario library + generators + traps per the legal/finance pattern.
+*Labels: backend, product, vertical · Priority: High · Estimate: 4*
+
+### BS-15 · Tax vertical
+Vertical 4. Task types: tax memo on a position (e.g., R&D credit, S-corp basis),
+return-position review, client explanation letters. Seasonally viral; CPA overlap
+with the finance vertical's reviewer base.
+*Labels: backend, product, vertical · Priority: Medium · Estimate: 4*
+
+### BS-16 · Company boards: vendor products as competitors + release-drama engine
+Extend the roster beyond foundation models: `kind: foundation | product`, provenance
+(self-submitted / buyer-contributed, version, date). Submission paths: vendor endpoint
+or bulk upload (opt-in; decliners shown as "declined to participate"), and
+buyer-contributed outputs run under the buyer's own license. Cadence engine:
+foundation rows re-run automatically on every model release; product rows on vendor
+releases + quarterly; quarterly "State of [vertical] AI" report generated from board
+movement. This is the primary organic-growth mechanic.
+*Labels: backend, pipeline, growth · Priority: Urgent · Estimate: 4*
+
+### BS-17 · Training & ramp-up mode (L&D SKU)
+Reframe judging as deliberate practice for juniors in high-churn roles: curricula of
+calibrated items with instant trap feedback, progress tracking against the calibration
+ladder, manager dashboards. Monetizes via onboarding/L&D budgets (per-seat,
+recurring); trainee votes stay low-weight until calibration earns weight — the tier
+system already supports this.
+*Labels: product, enterprise · Priority: High · Estimate: 4*

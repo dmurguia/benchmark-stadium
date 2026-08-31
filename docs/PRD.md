@@ -22,6 +22,9 @@ revenue later.
 - **Two verticals, chosen by the "accountability filter"** (expert-only judgment ×
   high stakes): **Legal** (contract-redline, clause-risk) and **Finance/ERP**
   (journal-entry, coa-mapping). More verticals are a playbook, not a rebuild.
+  Roadmap verticals 3–4 (decided): **medical coding & clinical documentation**
+  (BS-14 — strongest certification culture, ICD-10/CPT-keyed scoring, churn-driven
+  training demand) and **tax** (BS-15).
 - **"We bring the doc."** All scenarios are synthetic matters with planted issues —
   the sensitivity objection is solved by never needing an upload. BYOD
   (describe-don't-disclose synthesis, sanitize-assist) is deliberately out of the MVP.
@@ -39,6 +42,20 @@ revenue later.
   latent quality level that changes *substance* (issues caught, accounts chosen,
   ratings right) — so a professional's pick is a real judgment, and broken trap
   artifacts (unbalanced entries, swapped parties) are objectively wrong.
+
+## Growth thesis (decided 2026-08-31)
+
+The organic-growth mechanic is **release drama on company boards** (BS-16): the
+roster grows beyond foundation models to vendor *products* (opt-in self-submission;
+decliners listed; buyer-contributed outputs under the buyer's own license), foundation
+rows re-run automatically on every model release, and a quarterly "State of
+[vertical] AI" report is generated from board movement. Gimmick-tier growth hacks
+(daily puzzles, share cards) are explicitly rejected; the front door stays
+**prompt-first** (BS-13): describe the work → one blind comparison before signup.
+CE-credit (CPE/CLE) angles are rejected as non-durable; the durable adjacent wedge is
+**training & ramp-up** (BS-17) — judging calibrated work as deliberate practice for
+juniors in high-churn roles, sold per-seat into L&D/onboarding budgets, with trainee
+votes gaining board weight only as calibration is earned.
 
 ## Out of scope (v2, deliberate)
 
