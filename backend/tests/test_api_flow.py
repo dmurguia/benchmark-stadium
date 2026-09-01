@@ -135,3 +135,63 @@ def test_leaderboard_rank_delta_after_second_snapshot(auth_client):
     board = auth_client.get("/api/leaderboard/overall").json()
     assert board["entries"], "expected entries after recompute"
     assert all(e["rank_delta"] is not None or e["is_new"] for e in board["entries"])
+
+
+# ---- company boards (BS-16) ----
+
+def test_products_only_drafted_in_their_vertical(client):
+    from app.db import SessionLocal
+    from app.services.arena import eligible_models
+
+    db = SessionLocal()
+    try:
+        legal = {m.slug for m in eligible_models(db, "contract-redline")}
+        finance = {m.slug for m in eligible_models(db, "journal-entry")}
+    finally:
+        db.close()
+    assert "gavelpoint-drafts" in legal and "gavelpoint-drafts" not in finance
+    assert "ledgerpilot-close" in finance and "ledgerpilot-close" not in legal
+    # Declined vendors are never in any draft pool.
+    assert "atticus-counsel" not in legal | finance
+
+
+def test_board_carries_product_metadata_and_declined_vendors(auth_client):
+    auth_client.post("/api/leaderboard/recompute")
+    board = auth_client.get("/api/leaderboard/clause-risk").json()
+    kinds = {e["model"]["kind"] for e in board["entries"]}
+    assert kinds <= {"foundation", "product"}
+    products = [e for e in board["entries"] if e["model"]["kind"] == "product"]
+    for p in products:
+        assert p["model"]["provenance"] in ("self-submitted", "buyer-contributed")
+        assert p["model"]["submitted_version"]
+    declined = board["declined"]
+    assert {d["organization"] for d in declined} == {"Atticus AI", "Veritas Legal"}
+    assert all(d["note"] for d in declined)
+    # Overall board lists every vertical's empty chairs.
+    overall = auth_client.get("/api/leaderboard/overall").json()
+    assert len(overall["declined"]) == 4
+
+
+def test_simulate_release_moves_boards_and_feeds_drama(auth_client):
+    before = auth_client.get("/api/leaderboard/overall").json()["vote_count"]
+    resp = auth_client.post("/api/releases/simulate", json={"model_slug": "gpt-5-mini", "version": "v6 preview"})
+    assert resp.status_code == 200, resp.text
+    release = resp.json()
+    assert release["model"]["slug"] == "gpt-5-mini"
+    assert release["version"] == "v6 preview"
+    assert release["rerun_votes"] > 0
+    assert release["movement"], "expected per-board movement entries"
+    for m in release["movement"]:
+        assert m["after_rank"] >= 1 and m["after_rating"] > 0
+
+    feed = auth_client.get("/api/releases").json()
+    assert feed and feed[0]["id"] == release["id"]
+
+    after = auth_client.get("/api/leaderboard/overall").json()["vote_count"]
+    assert after > before
+
+
+def test_simulate_release_rejects_unknown_and_product_models(auth_client):
+    assert auth_client.post("/api/releases/simulate", json={"model_slug": "nope"}).status_code == 422
+    # Products don't get foundation-release re-runs; vendors resubmit instead.
+    assert auth_client.post("/api/releases/simulate", json={"model_slug": "gavelpoint-drafts"}).status_code == 422

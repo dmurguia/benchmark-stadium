@@ -14,6 +14,7 @@ import random
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from ..categories import CATEGORIES
 from ..config import get_settings
 from ..models import ArenaModel, Battle, Generation, Match, TrapResult, User, Vote, utcnow
 from .providers import ProviderNotConfigured, get_provider_for, sample_provider
@@ -29,16 +30,24 @@ class ArenaError(Exception):
     pass
 
 
-def pick_models(db: Session, count: int) -> list[ArenaModel]:
-    active = list(db.scalars(select(ArenaModel).where(ArenaModel.active.is_(True))))
-    if len(active) < count:
-        raise ArenaError(f"Need at least {count} active models in the roster; found {len(active)}. Run the seed script.")
-    return random.sample(active, count)
+def eligible_models(db: Session, category: str) -> list[ArenaModel]:
+    """Foundation models compete on every board; vendor products only inside
+    their vertical; declined vendors are never drafted."""
+    vertical = CATEGORIES.get(category, {}).get("vertical", "")
+    active = db.scalars(select(ArenaModel).where(ArenaModel.active.is_(True)))
+    return [m for m in active if m.kind != "declined" and m.vertical in ("", vertical)]
+
+
+def pick_models(db: Session, count: int, category: str) -> list[ArenaModel]:
+    pool = eligible_models(db, category)
+    if len(pool) < count:
+        raise ArenaError(f"Need at least {count} eligible models for '{category}'; found {len(pool)}. Run the seed script.")
+    return random.sample(pool, count)
 
 
 async def create_battle(db: Session, user: User | None, category: str, scenario: dict) -> Battle:
     # 4 bracket contestants + 1 extra whose output anchors the calibration match.
-    models = pick_models(db, 5)
+    models = pick_models(db, 5, category)
     bracket_models, trap_model = models[:4], models[4]
     prompt = scenario["brief"]
     battle = Battle(

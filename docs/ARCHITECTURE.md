@@ -24,6 +24,17 @@ snapshot pipeline, sandboxed document iframes). The pivot adds:
   consensus agreement vs. verified peers on identical (scenario, model-pair) votes —
   well-defined because sample outputs are deterministic — percentile, and badges;
   served at `/api/auth/reviewer`, rendered at `/profile`.
+- **Company boards + release drama (BS-16)**: `arena_models.kind`
+  (foundation | product | declined) with provenance + submitted version; products are
+  drafted and ranked only inside their vertical (`arena.eligible_models`), declined
+  vendors surface on boards as empty-chair rows (`LeaderboardOut.declined`).
+  `model_releases` records each release with per-board rank movement captured as
+  JSON; `services/releases.simulate_release` re-runs a foundation model (strength
+  shift → synthetic re-run votes → snapshot recompute → before/after ranks) behind
+  `POST /api/releases/simulate`, with `GET /api/releases` feeding the UI's Release
+  radar and home banner. Real release detection and vendor submission replace the
+  simulate path in production (BS-18). SQLite column backfill for the new
+  `arena_models` fields lives in `db._ensure_columns` (Alembic later).
 
 ## 1. System shape (v1 baseline)
 

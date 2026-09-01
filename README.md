@@ -20,6 +20,19 @@ Runs fully offline out of the box — no API keys needed (see *Generation modes*
 4. Reveal: bracket, model identities, and your calibration result.
 5. Your verified, credential-weighted votes recompute the board immediately.
 
+## Company boards & release drama
+
+Boards rank **foundation models and vendor products side by side**. Products (all
+fictional in the prototype) carry a PRODUCT badge with provenance — self-submitted or
+buyer-contributed, plus the submitted version — and compete only inside their
+vertical. Invited vendors who declined appear as dashed **empty-chair rows** under
+each board ("Invited · declined to participate") with a standing submission CTA.
+
+When a foundation model ships, its rows re-run on every board it competes on and the
+rank movement lands in the **Release radar** (`GET /api/releases`). In the prototype,
+`POST /api/releases/simulate` (or the "Simulate next release" button on the
+leaderboard) stands in for real release detection.
+
 ## Trust layer (baked in)
 
 - **Credential tiers**: free-mail signup = tier 0 (directional only) · work-domain

@@ -92,8 +92,22 @@ class ArenaModelOut(BaseModel):
     organization: str
     provider: str
     active: bool
+    # Company boards: foundation | product | declined, plus product provenance.
+    kind: str = "foundation"
+    vertical: str = ""
+    provenance: str = ""
+    submitted_version: str = ""
 
     model_config = {"from_attributes": True}
+
+
+class DeclinedVendorOut(BaseModel):
+    """An invited vendor with no board presence — the empty chair."""
+
+    name: str
+    organization: str
+    vertical: str
+    note: str
 
 
 # ---- battles ----
@@ -180,3 +194,32 @@ class LeaderboardOut(BaseModel):
     computed_at: datetime | None
     vote_count: int
     entries: list[LeaderboardEntryOut]
+    # Vendors invited to this board who aren't on it (FOMO rows).
+    declined: list[DeclinedVendorOut] = []
+
+
+# ---- releases ----
+
+class ReleaseMovementOut(BaseModel):
+    category: str
+    category_name: str
+    before_rank: int | None
+    after_rank: int
+    before_rating: float | None
+    after_rating: float
+
+
+class ReleaseOut(BaseModel):
+    id: int
+    model: ArenaModelOut
+    version: str
+    notes: str
+    rerun_votes: int
+    released_at: datetime
+    movement: list[ReleaseMovementOut]
+
+
+class SimulateReleaseIn(BaseModel):
+    # All optional: omit to release a random foundation model.
+    model_slug: str | None = None
+    version: str | None = None

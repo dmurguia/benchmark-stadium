@@ -93,6 +93,37 @@ export interface ArenaModelOut {
   organization: string;
   provider: string;
   active: boolean;
+  // Company boards: foundation | product | declined.
+  kind: string;
+  vertical: string;
+  provenance: string;
+  submitted_version: string;
+}
+
+export interface DeclinedVendorOut {
+  name: string;
+  organization: string;
+  vertical: string;
+  note: string;
+}
+
+export interface ReleaseMovementOut {
+  category: string;
+  category_name: string;
+  before_rank: number | null;
+  after_rank: number;
+  before_rating: number | null;
+  after_rating: number;
+}
+
+export interface ReleaseOut {
+  id: number;
+  model: ArenaModelOut;
+  version: string;
+  notes: string;
+  rerun_votes: number;
+  released_at: string;
+  movement: ReleaseMovementOut[];
 }
 
 export interface GenerationOut {
@@ -156,4 +187,5 @@ export interface LeaderboardOut {
   computed_at: string | null;
   vote_count: number;
   entries: LeaderboardEntryOut[];
+  declined: DeclinedVendorOut[];
 }

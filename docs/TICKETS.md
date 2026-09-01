@@ -187,6 +187,19 @@ stats, catalog); Playwright run through sign-up → onboarding → session → r
 boards → profile with screenshot review.
 *Labels: quality · Estimate: 2*
 
+### BS-16 · Company boards + release-drama engine (prototype scope — shipped 2026-09-01)
+Roster extended beyond foundation models: `kind: foundation | product | declined`
+with provenance (self-submitted / buyer-contributed + version). Vendor products
+(fictional personas) seeded per vertical, drafted into battles and ranked on boards
+only inside their vertical; invited-but-declined vendors rendered as dashed
+empty-chair rows with a submission CTA (the FOMO mechanic). Release engine:
+`model_releases` table, `POST /api/releases/simulate` re-runs a foundation model's
+rows across its boards (synthetic re-run judgments → snapshot recompute → captured
+rank movement), `GET /api/releases` feed; UI ships a Release radar panel with
+movement chips + one-click simulate, and a home-page drama banner. 19 backend
+tests passing. Production remainder split into BS-18.
+*Labels: backend, pipeline, frontend, growth · Estimate: 4*
+
 ## v2 backlog
 
 ### BS-8 · Describe-don't-disclose scenario synthesis
@@ -238,15 +251,13 @@ return-position review, client explanation letters. Seasonally viral; CPA overla
 with the finance vertical's reviewer base.
 *Labels: backend, product, vertical · Priority: Medium · Estimate: 4*
 
-### BS-16 · Company boards: vendor products as competitors + release-drama engine
-Extend the roster beyond foundation models: `kind: foundation | product`, provenance
-(self-submitted / buyer-contributed, version, date). Submission paths: vendor endpoint
-or bulk upload (opt-in; decliners shown as "declined to participate"), and
-buyer-contributed outputs run under the buyer's own license. Cadence engine:
-foundation rows re-run automatically on every model release; product rows on vendor
-releases + quarterly; quarterly "State of [vertical] AI" report generated from board
-movement. This is the primary organic-growth mechanic.
-*Labels: backend, pipeline, growth · Priority: Urgent · Estimate: 4*
+### BS-18 · Company boards, production scope
+The parts of BS-16 the prototype stubs: real vendor submission portal (opt-in
+endpoint or bulk upload, terms, versioned resubmission), buyer-contributed outputs
+under the buyer's own license, real model-release detection replacing the simulate
+endpoint, product-row re-run cadence (vendor releases + quarterly), and the
+quarterly "State of [vertical] AI" report generated from captured board movement.
+*Labels: backend, pipeline, growth · Priority: High · Estimate: 4*
 
 ### BS-17 · Training & ramp-up mode (L&D SKU)
 Reframe judging as deliberate practice for juniors in high-churn roles: curricula of

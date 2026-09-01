@@ -58,6 +58,16 @@ class ArenaModel(Base):
     provider_model_id: Mapped[str] = mapped_column(String(120), default="")
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     description: Mapped[str] = mapped_column(Text, default="")
+    # Company boards (BS-16): the roster holds foundation models AND vendor
+    # products. kind: foundation | product | declined. A "declined" row is an
+    # invited vendor with no outputs — shown as an empty chair on boards, never
+    # drafted into battles (active=False).
+    kind: Mapped[str] = mapped_column(String(20), default="foundation")
+    # Products compete only inside their vertical; "" = all (foundation models).
+    vertical: Mapped[str] = mapped_column(String(40), default="")
+    # How the product's outputs reach the arena: self-submitted | buyer-contributed.
+    provenance: Mapped[str] = mapped_column(String(40), default="")
+    submitted_version: Mapped[str] = mapped_column(String(60), default="")
 
 
 class Battle(Base):
@@ -154,6 +164,29 @@ class TrapResult(Base):
     passed: Mapped[bool] = mapped_column(Boolean)
     decision_ms: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ModelRelease(Base):
+    """A model release event — the trigger for automatic board re-runs.
+
+    When a foundation model ships a new version, its rows are re-run across the
+    boards it competes on; the rank movement captured here feeds the release
+    feed ("release drama") and the periodic State-of-the-vertical reports.
+    """
+
+    __tablename__ = "model_releases"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    model_id: Mapped[int] = mapped_column(ForeignKey("arena_models.id"), index=True)
+    version: Mapped[str] = mapped_column(String(60))
+    notes: Mapped[str] = mapped_column(Text, default="")
+    # Per-board movement captured right after the re-run, as JSON:
+    # [{"category", "before_rank", "after_rank", "before_rating", "after_rating"}]
+    movement_json: Mapped[str] = mapped_column(Text, default="[]")
+    rerun_votes: Mapped[int] = mapped_column(Integer, default=0)
+    released_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
+
+    model: Mapped[ArenaModel] = relationship()
 
 
 class RatingSnapshot(Base):

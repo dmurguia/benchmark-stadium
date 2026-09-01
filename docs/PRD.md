@@ -49,7 +49,18 @@ The organic-growth mechanic is **release drama on company boards** (BS-16): the
 roster grows beyond foundation models to vendor *products* (opt-in self-submission;
 decliners listed; buyer-contributed outputs under the buyer's own license), foundation
 rows re-run automatically on every model release, and a quarterly "State of
-[vertical] AI" report is generated from board movement. Gimmick-tier growth hacks
+[vertical] AI" report is generated from board movement.
+
+**BS-16 prototype scope shipped (2026-09-01):** vendor products (fictional personas)
+compete on boards inside their vertical with PRODUCT badges and provenance
+(self-submitted / buyer-contributed + version); invited vendors who declined render as
+dashed empty-chair rows with a "submit your product" CTA — the deliberate FOMO surface;
+a release engine re-runs a foundation model's rows across its boards and captures the
+rank movement into a Release radar feed (one-click "simulate next release" stands in
+for real release detection) plus a home-page drama banner. Company-as-cohort ideas are
+explicitly *not* built as a feature — the empty chair is the only cohort mechanic kept.
+Production remainder (real submission portal, release detection, quarterly report) is
+BS-18. Gimmick-tier growth hacks
 (daily puzzles, share cards) are explicitly rejected; the front door stays
 **prompt-first** (BS-13): describe the work → one blind comparison before signup.
 CE-credit (CPE/CLE) angles are rejected as non-durable; the durable adjacent wedge is

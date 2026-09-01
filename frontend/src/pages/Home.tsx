@@ -8,6 +8,7 @@ import {
   type BattleOut,
   type CategoryOut,
   type LeaderboardOut,
+  type ReleaseOut,
   type ScenarioOut,
   type UserOut,
   type VerticalOut,
@@ -40,6 +41,7 @@ export default function Home() {
   const [top, setTop] = useState<LeaderboardOut | null>(null);
   const [stats, setStats] = useState<StatsOut | null>(null);
   const [models, setModels] = useState<ArenaModelOut[]>([]);
+  const [latestRelease, setLatestRelease] = useState<ReleaseOut | null>(null);
 
   useEffect(() => {
     api<VerticalOut[]>("/api/verticals").then(setVerticals).catch(() => {});
@@ -47,6 +49,9 @@ export default function Home() {
     api<LeaderboardOut>("/api/leaderboard/overall").then(setTop).catch(() => {});
     api<StatsOut>("/api/stats").then(setStats).catch(() => {});
     api<ArenaModelOut[]>("/api/models").then(setModels).catch(() => {});
+    api<ReleaseOut[]>("/api/releases?limit=1")
+      .then((rs) => setLatestRelease(rs[0] ?? null))
+      .catch(() => {});
   }, []);
 
   // Default to the signed-in reviewer's vertical.
@@ -117,6 +122,18 @@ export default function Home() {
             You judge; the board moves; your calibration score grows. Every document is synthetic:
             nothing confidential ever leaves your head.
           </p>
+          {latestRelease && (
+            <Link
+              to="/leaderboard"
+              className="mt-6 inline-flex max-w-full items-center gap-2 rounded-full border border-gold/40 bg-gold/10 px-4 py-2 text-sm text-gold transition hover:bg-gold/20"
+            >
+              <span>⚡</span>
+              <span className="truncate">
+                {latestRelease.model.name} shipped a {latestRelease.version} — every board it competes on
+                just re-ran. See the movement →
+              </span>
+            </Link>
+          )}
         </section>
 
         {/* vertical picker */}

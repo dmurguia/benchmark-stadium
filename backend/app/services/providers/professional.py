@@ -27,6 +27,9 @@ QUALITY: dict[str, float] = {
     "kimi-k2-5": 0.72, "grok-4-1": 0.70, "gemini-3-flash": 0.66,
     "qwen3-max": 0.64, "mistral-large-3": 0.62, "gpt-5-mini": 0.60,
     "minimax-m2-5": 0.55, "llama-4-maverick": 0.50,
+    # Vendor products (company boards) — fine-tuned for their vertical.
+    "gavelpoint-drafts": 0.84, "briefly-redline": 0.68,
+    "ledgerpilot-close": 0.82, "balancr-je": 0.58,
 }
 
 _FONTS = ["Georgia, 'Times New Roman', serif", "'Palatino Linotype', Palatino, serif",
