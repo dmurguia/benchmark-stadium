@@ -1,28 +1,36 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: ["./index.html", "./src/**/*.{ts,tsx}"],
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: {
-          950: "#0a0a0f",
-          900: "#101019",
-          800: "#181825",
-          700: "#232336",
-          600: "#33334d",
-          400: "#7c7c9a",
-          200: "#c9c9dd",
-          50: "#f2f2f8",
+        paper: "#f6f1e8",
+        panel: "#eee8de",
+        hairline: "#d8d0c4",
+        ink: "#272a24",
+        muted: "#6f6a61",
+        card: "#fbf8f2",
+        forest: {
+          DEFAULT: "#2f3a31",
+          hover: "#455443",
         },
-        arena: {
-          DEFAULT: "#7c5cff",
-          bright: "#9d85ff",
-          dim: "#5a3fd6",
+        rust: {
+          DEFAULT: "#9b4e35",
+          tint: "#f3e7e1",
         },
-        gold: "#f5b83d",
+        moss: {
+          tint: "#e6ede4",
+        },
       },
       fontFamily: {
-        display: ["'Space Grotesk'", "'Segoe UI'", "system-ui", "sans-serif"],
+        sans: ["Manrope", "ui-sans-serif", "system-ui", "sans-serif"],
+        serif: ["Georgia", "Times New Roman", "serif"],
+      },
+      boxShadow: {
+        whisper: "0 1px 2px rgba(39, 42, 36, 0.04)",
+      },
+      maxWidth: {
+        content: "1080px",
       },
     },
   },

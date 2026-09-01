@@ -140,6 +140,11 @@ def record_vote(db: Session, battle: Battle, user: User | None, match_id: int, w
     if winner_generation_id not in (match.a_generation_id, match.b_generation_id):
         raise ArenaError("Winner must be one of the two work products in this match.")
 
+    # A guest-started battle is claimed by whoever signs in mid-session, so
+    # the auth gate after the first comparison keeps the same bracket going.
+    if user is not None and battle.user_id is None:
+        battle.user_id = user.id
+
     decision_ms = _elapsed_ms(battle)
     match.winner_generation_id = winner_generation_id
     match.decided_at = utcnow()

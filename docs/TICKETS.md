@@ -200,6 +200,22 @@ movement chips + one-click simulate, and a home-page drama banner. 19 backend
 tests passing. Production remainder split into BS-18.
 *Labels: backend, pipeline, frontend, growth · Estimate: 4*
 
+### BS-13 · Prompt-first front door (shipped 2026-09-01)
+The front door is an open prompt box ("describe the work") with work-type chips and a
+typed rotating placeholder; free text keyword-routes to the right board. Battles no
+longer require auth: a guest gets ONE real blind comparison, then the auth gate
+(work-email code, in place, mid-session) — signing in claims the running battle so
+the bracket continues. Guest votes carry zero weight and never touch published boards.
+
+### BS-19 · Front-end rebuild from Magic Patterns (shipped 2026-09-01)
+Replaced the stopgap dark UI with the Magic Patterns design (corsac.ai system: cream
+paper palette, Manrope, slim left sidebar, rounded-xl cards). All six screens wired to
+the live API: prompt-first home (real scenarios, stats, drama banner), blind judging
+with sandboxed document iframes in the paper chrome, reveal (real bracket, calibration
+pass/fail card, board movement), leaderboards (chart/table toggle, release radar with
+one-click simulate, PRODUCT provenance, empty chairs), sessions, reviewer record with
+onboarding. Design source prompt: docs/magic-patterns-prompt.md.
+
 ## v2 backlog
 
 ### BS-8 · Describe-don't-disclose scenario synthesis
@@ -229,14 +245,6 @@ this prototype rehearses.
 One comparison a day by email — two-minute ritual for busy professionals; streaks
 and calibration progress in the digest.
 *Labels: growth · Priority: Medium · Estimate: 2*
-
-### BS-13 · Prompt-first front door (pre-signup taste)
-Replace the scenario-picker-only entry with a prompt box: "describe the work" matches
-or synthesizes a scenario and drops the visitor into ONE blind comparison immediately,
-playable before signup; signup is the price of recording the score and continuing the
-full session. Pulls BS-8 (describe-don't-disclose) forward as the door mechanism.
-No daily-puzzle framing.
-*Labels: frontend, growth · Priority: Urgent · Estimate: 3*
 
 ### BS-14 · Medical coding & clinical documentation vertical
 Vertical 3. Task types: E/M coding of a clinical note (ICD-10/CPT keyed — traps and

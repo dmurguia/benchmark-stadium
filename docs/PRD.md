@@ -60,7 +60,15 @@ rank movement into a Release radar feed (one-click "simulate next release" stand
 for real release detection) plus a home-page drama banner. Company-as-cohort ideas are
 explicitly *not* built as a feature — the empty chair is the only cohort mechanic kept.
 Production remainder (real submission portal, release detection, quarterly report) is
-BS-18. Gimmick-tier growth hacks
+BS-18.
+
+**BS-13 + BS-19 shipped (2026-09-01):** the front door is now prompt-first — an open
+"describe the work" box (keyword-routed to the right board) with work-type chips; a
+guest gets one real blind comparison before the in-session auth gate, and signing in
+mid-session claims the running bracket (guest votes carry zero board weight). The
+entire UI was rebuilt from the Magic Patterns design on the corsac.ai design system
+(`docs/magic-patterns-prompt.md` is the design source), wired screen-for-screen to the
+live API. Gimmick-tier growth hacks
 (daily puzzles, share cards) are explicitly rejected; the front door stays
 **prompt-first** (BS-13): describe the work → one blind comparison before signup.
 CE-credit (CPE/CLE) angles are rejected as non-durable; the durable adjacent wedge is

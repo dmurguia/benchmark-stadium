@@ -57,9 +57,43 @@ def test_vote_requires_bracket_order(auth_client):
     assert resp.status_code == 422
 
 
-def test_battle_requires_auth(client):
+def test_guest_taste_then_claim(client):
+    # BS-13: a guest can start a real session with no signup…
     resp = client.post("/api/battles", json={"category": "contract-redline"})
-    assert resp.status_code == 401
+    assert resp.status_code == 200
+    battle = resp.json()
+    first = battle["matches"][0]
+    resp = client.post(
+        f"/api/battles/{battle['public_id']}/votes",
+        json={"match_id": first["id"], "winner_generation_id": first["a_generation_id"]},
+    )
+    assert resp.status_code == 200
+
+    # …guest votes carry zero weight, so they never reach verified boards.
+    from sqlalchemy import select
+
+    from app.db import SessionLocal
+    from app.models import Vote
+
+    db = SessionLocal()
+    try:
+        vote = db.scalars(select(Vote).order_by(Vote.id.desc()).limit(1)).first()
+        assert vote is not None and vote.weight == 0.0
+    finally:
+        db.close()
+
+    # Signing in mid-session claims the battle for the new account.
+    code = client.post("/api/auth/request-code", json={"email": "gated@lawfirm.example"}).json()["dev_code"]
+    client.post("/api/auth/verify", json={"email": "gated@lawfirm.example", "code": code})
+    second = battle["matches"][1]
+    resp = client.post(
+        f"/api/battles/{battle['public_id']}/votes",
+        json={"match_id": second["id"], "winner_generation_id": second["b_generation_id"]},
+    )
+    assert resp.status_code == 200
+    mine = client.get("/api/battles").json()
+    assert battle["public_id"] in {b["public_id"] for b in mine}
+    client.cookies.clear()
 
 
 def test_specific_scenario(auth_client):

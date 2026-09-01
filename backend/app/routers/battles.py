@@ -87,7 +87,9 @@ def _serialize(battle: Battle, db: Session | None = None) -> BattleOut:
 async def create_battle(
     payload: BattleCreateIn,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    # Prompt-first front door (BS-13): guests get a real blind session with no
+    # signup; their votes carry zero board weight until they verify.
+    user: User | None = Depends(get_current_user_optional),
 ) -> BattleOut:
     if not is_valid_category(payload.category):
         raise HTTPException(status_code=400, detail=f"Unknown category '{payload.category}'.")
