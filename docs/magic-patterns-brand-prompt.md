@@ -1,8 +1,8 @@
-# Magic Patterns prompt — Calibrated brand v3 ("Coming into focus", net-new palette)
+# Magic Patterns prompt — Calibrated brand v4 ("Coming into focus", slate instrument)
 
-v3: the palette and type are now net-new (decided 2026-09-03) — Calibrated no longer
-inherits the corsac.ai tokens. Bone-and-ink temperature derived from the reference
-set (Anima hero-object interleaving + monospace specimen chips; Giga's stepper
+v4: slate-instrument palette (chosen 2026-09-03 after the first generation; all
+text/ground pairs contrast-checked to WCAG AA). Cool machine-shop temperature that
+matches the steel caliper hero object. Derived from the reference set (Anima hero-object interleaving + monospace specimen chips; Giga's stepper
 product tour; Harvey's serif display, painterly texture cards, framed art-video,
 flat micro-charts; Wild pixelation; Zaro's madlib token-chip prompt, mono trust
 strip, and pixel-cluster page texture). Run on Magic Patterns' **Base** design
@@ -26,11 +26,12 @@ measured things are crisp ink.
 
 ## DESIGN SYSTEM (follow exactly)
 
-Bone-and-ink palette: page background #f4f3ef, alternate panel #e9e8e2, cards
-#faf9f6, hairline borders #d6d4cc, primary ink #1c1e1a, muted text #6d7069, deep
-spruce #1d2a24 (hover #2c3f35) as the primary accent and the dark-card color,
-needle orange #c14a24 (tint #f5e4dc) reserved for the gauge needle, PRODUCT chips,
-downward movement, and the "uncalibrated" state, pale moss #dbe7d0 for pass states.
+Slate instrument palette: page background #eef0ef (cool slate-white), alternate
+panel #e3e6e4, cards #f7f8f7, hairline borders #cdd2cf, primary ink #1a1d1c
+(graphite), muted text #5f6663, gunmetal #202523 (hover #2c3330) for primary
+buttons and the dark-card color, steel gray #8f958f for de-emphasized chart bars,
+oxide orange #b8451f (tint #f3e1d8) reserved for the gauge needle, PRODUCT chips,
+downward movement, and the "uncalibrated" state, sage tint #d5e0d6 for pass states.
 
 Typography, three voices:
 1. **Newsreader (serif, 500–700)** for landing-page H1/H2 and big statistic
@@ -41,35 +42,35 @@ Typography, three voices:
    [ AUTHORS HIDDEN ] · [ CPA VERIFIED ] · [ MEASURED JUDGMENT ] — used sparingly as
    measurement callouts on the hero and on framed product panels.
 
-Texture: the ONE dark element family is **painterly ink-wash cards** — deep spruce
-near-black (#1d2a24) brushed texture backgrounds with white serif titles and
-outlined ghost buttons. Page grounds stay bone; no other dark sections. Cards are
+Texture: the ONE dark element family is **painterly ink-wash cards** — gunmetal
+near-black (#202523) brushed texture backgrounds with white serif titles and
+outlined ghost buttons. Page grounds stay slate; no other dark sections. Cards are
 rounded-xl (12px), 1px hairline borders, whisper shadows. No gradients, no
 glassmorphism, no stock photos, no emoji.
 
-Logo: a circular gauge dial — thin ink circle, fine rim ticks, a needle-orange
+Logo: a circular gauge dial — thin ink circle, fine rim ticks, an oxide-orange
 needle just off twelve o'clock — beside "Calibrated" in Schibsted Grotesk 700.
 Product lockup: "Calibration Arena · by Calibrated".
 
 Signature motion: one entrance behavior — "resolve": key elements appear as 8px
 pixel-mosaic for ~250ms then sharpen. No bounces, no floating.
 
-Page texture: bone grounds carry faint scattered **pixel-dither clusters** near the
+Page texture: slate grounds carry faint scattered **pixel-dither clusters** near the
 page edges — small groups of 4–8px ink squares at 4–6% opacity, denser toward
 corners, never behind body text. This is the brand's ambient texture; it replaces
 any dot-grid or mesh.
 
 Charts: flat and editorial. Big serif numerals (64–96px) over one-line muted
-captions separated by hairline rules; bar charts as flat ink-gray bars with the
-highlighted competitor in needle orange, values labeled directly on bars, a single
+captions separated by hairline rules; bar charts as flat steel-gray bars with the
+highlighted competitor in oxide orange, values labeled directly on bars, a single
 baseline hairline, no gridlines or shadows. Dashboards may use micro bar charts
 (thin dense vertical bars, tiny labels).
 
 ## SCREEN 1 — LANDING PAGE
 
-- **Hero (the object-interleave move)**: a muted bone field holding ONE large
-  rendered object — a precision caliper measuring a crisp sheet of paper, in soft
-  ink/bone/pale-moss tones — with the serif H1 **interleaved through the object**
+- **Hero (the object-interleave move)**: a muted slate field holding ONE large
+  rendered object — a precision caliper measuring a crisp sheet of paper, in its natural
+  steel and slate tones — the object and the palette are the same material — with the serif H1 **interleaved through the object**
   (words passing behind and in front of it): "Which AI is actually good at your
   job?" Small bracketed mono specimen chips float at the edges: [ AUTHORS HIDDEN ],
   [ MEASURED JUDGMENT ], [ CPA VERIFIED ]. Eyebrow above: "THE RATING AGENCY FOR AI
@@ -86,7 +87,7 @@ baseline hairline, no gridlines or shadows. Dashboards may use micro bar charts
 - **Cohort strip**: directly under the hero, a hairline row of boxed cells with the
   mono eyebrow "COMPETING THIS SEASON": Claude Opus 4.8 · GPT-5.5 · Gemini 3 Pro ·
   LedgerPilot [PRODUCT] · GavelPoint [PRODUCT] · +13 more — each name in its own
-  hairline cell, products carrying a tiny needle-orange chip.
+  hairline cell, products carrying a tiny oxide-orange chip.
 - **01 · How it works (the stepper product tour)**: left column is a vertical stage
   list — "Describe the work" / "Judge five drafts, blind" / "The calibration check" /
   "The boards move" / "Get paid to judge" — active stage expanded with a two-line
@@ -96,7 +97,7 @@ baseline hairline, no gridlines or shadows. Dashboards may use micro bar charts
   author chips; stage 4 shows the board chart. A mono chip on the frame corner
   labels the current stage.
 - **02 · The boards**: live board preview — flat bar chart, ink bars, one
-  needle-orange bar for a vendor product with a "PRODUCT" chip and provenance
+  oxide-orange bar for a vendor product with a "PRODUCT" chip and provenance
   sub-line ("self-submitted · v3.2 · Aug 2026"); beneath it two grayed dashed
   "empty chair" rows: "Atticus AI — invited · declined to participate". Caption:
   "Foundation models and vendor products, same blind panel."
@@ -114,9 +115,9 @@ baseline hairline, no gridlines or shadows. Dashboards may use micro bar charts
     ever." The emerging screenshot: the My Record page.
   - **For vendors & labs** — "Your buyers are already comparing you here." Certified
     evaluation, private-first results, publish is your call + ghost button "Claim a
-    founding seat". The emerging screenshot: the board with a needle-orange PRODUCT
+    founding seat". The emerging screenshot: the board with an oxide-orange PRODUCT
     bar.
-- **05 · The calibration loop (the framed art-video move)**: on a muted bone-gray
+- **05 · The calibration loop (the framed art-video move)**: on a muted slate
   field, centered copy ("Five comparisons. One hidden check. A board that moves.")
   above a large framed animation — a minimal line-drawn art piece (gauge needle
   sweeping, documents resolving from dither to sharp) with a small play/pause
@@ -140,8 +141,8 @@ look identical — never hint which is the calibration check.
 ## SCREEN 3 — LEADERBOARD (app)
 
 Same sidebar. Vertical tabs (Overall · Finance/ERP · more coming). Release radar
-strip: recent model releases with movement chips ("Journal Entries 8 → 4 ▲" in pale
-moss, "▼" in needle orange). Main board in chart view per the chart law, toggle to a
+strip: recent model releases with movement chips ("Journal Entries 8 → 4 ▲" in sage,
+"▼" in oxide orange). Main board in chart view per the chart law, toggle to a
 dense table (Rank, Δ, Competitor, Score, 95% CI, Judgments, Win rate). Below: the
 dashed empty-chair block with vendor CTA. Methodology strip: verified votes only ·
 hidden quality checks · weighted Bradley–Terry.
@@ -151,7 +152,7 @@ hidden quality checks · weighted Bradley–Terry.
 Reviewer profile: name, "CPA / Accountant · Finance", tier chip, Calibrated Reviewer
 seal (circular tick-ring badge with a check). Four stat cards with serif numerals
 (Calibration score 92%, Top 18%, Consensus 84%, 47 judgments). Badge ladder rail
-(Apprentice → Calibrated Reviewer → Lead Reviewer). A needle-tinted card (#f5e4dc):
+(Apprentice → Calibrated Reviewer → Lead Reviewer). An oxide-tinted card (#f3e1d8):
 "Your calibration qualifies you for paid panel work — 2 open engagements." The
 percentile numeral loads with the de-pixelation effect.
 
