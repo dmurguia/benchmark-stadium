@@ -76,6 +76,49 @@ CE-credit (CPE/CLE) angles are rejected as non-durable; the durable adjacent wed
 juniors in high-churn roles, sold per-seat into L&D/onboarding budgets, with trainee
 votes gaining board weight only as calibration is earned.
 
+## Focus decision (2026-09-02): accounting-first, calibrated judgment network
+
+**Positioning:** "The calibrated judgment layer for professional AI — starting with
+accounting." (Lab/investor framing: RL-grade human judgment network; practitioner
+framing: get ranked, get calibrated, get paid. Never say "RL" to CPAs.) Legal is
+demoted from launch vertical to fast-follow (Certera/Vals/Legora saturation); the
+platform stays vertical-agnostic.
+
+**Model (AfterQuery-adjacent, opposite surface):** AfterQuery et al. sell private
+expert data upstream to labs; we produce a public trust-weighted market signal and a
+**calibration-scored CPA panel**. Moat = continuously measured rater quality (trap
+pass rates, consensus, percentile — refreshed weekly) vs. their résumé-vetting; plus
+demand-side products (boards, State of Finance AI report) that data vendors can't
+build without ranking their own customers.
+
+**Supply ladder (novice → paid):** Guest (1 free comparison) → Verified (work email,
+counted votes) → CPA-verified (NASBA CPAVerify lookup → tier 2, 1.5×) → Calibrated
+Reviewer (≥80% traps over ≥5, consensus floor → paid-pool eligible) → **Panelist**
+(contracted paid eval work, weekly payout) → Lead reviewer (authors rubrics/traps,
+higher rate). Free work keeps public boards honest and builds the credential; paid
+work is private gigs. Demand-first lesson from AfterQuery's genesis still applies:
+line up 1–2 anchor design partners before scaling supply past ~200–500.
+
+**ICPs (priority order):**
+1. **Accounting-AI vendors** (Basis, Numeric, Rillet, Puzzle, Digits, Fieldguide,
+   DataSnipper, Vic.ai…): credibility gap vs. skeptical controllers. Free board
+   listing → paid certified evaluation ($10–40k, private-first with publish option)
+   → quarterly monitoring. Rillet = design-partner #1 candidate (warm network).
+2. **Labs + data vendors as channel** (Mercor/AfterQuery/Surge subcontracting
+   calibrated CPA capacity; APEX-Accounting proves finance-eval demand): calibrated
+   grading panels, gold-standard eval sets (Corsac pipeline), rubric authoring.
+   Per-judgment $3–15; projects $25–250k.
+3. **Enterprises/firms** (CAO/controller mid-ERP-decision; firm innovation leads):
+   private bake-offs + know-before-you-buy reports ($15–50k); L&D calibration
+   training per-seat (BS-17). Inbound via the board; pursue last.
+Individual professionals never pay.
+
+**Recruiting (community-first):** r/Accounting, Fishbowl Big-4 bowls, Going Concern
+(earned media), CPA-exam communities (trainee tier), LinkedIn CPA-filtered outreach +
+referral bounties, state societies; off-season timing (mid-Apr–Jun, post-Oct 15).
+Tier-2 verification via CPAVerify.org. First public artifact: **"State of Finance AI,
+Issue #1"** generated from captured `model_releases` board movement.
+
 ## Out of scope (v2, deliberate)
 
 Bring-your-own-document; license-verification integrations (bar/CPA/SAP lookups);
