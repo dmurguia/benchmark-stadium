@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from 'react'
 import { getBoard } from '../../utils/boards'
 
 /**
- * Drop a period engraving at frontend/public/engraving.jpg to replace the
- * placeholder. The placeholder CDN image is used only if that file is missing.
+ * The engraving ships locally at frontend/public/engraving.jpg — an
+ * industrial-era San Francisco countinghouse: bookkeepers and a master
+ * craftsman at work, precision instruments on the desk, a factory skyline
+ * behind them. The CDN copy is used only if that file is missing.
  */
 const LOCAL_ENGRAVING = '/engraving.jpg'
 const FALLBACK_ENGRAVING =
-  'https://cdn.magicpatterns.com/patterns/generated-images/f93785a2-ba0c-48be-b574-18ee59280b24.jpg'
+  'https://cdn.magicpatterns.com/patterns/generated-images/7ecb6c02-17f3-4947-bf66-517102656cc1.jpg'
 
 interface CalibrationLensProps {
   /** Lens radius in px. */
