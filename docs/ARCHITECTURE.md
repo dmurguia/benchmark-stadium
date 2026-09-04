@@ -18,7 +18,7 @@ snapshot pipeline, sandboxed document iframes). The pivot adds:
   positions are shuffled so nothing leaks which output is broken.
 - **Trust layer**: `users.tier` from email domain at signup (free-mail 0 → named 3);
   `votes` carry `weight` (tier), server-side `decision_ms`, and `counted` (timing
-  floor, `DESIGNARENA_MIN_DECISION_MS`). `ratings.py` fits a **weighted**
+  floor, `ARENA_MIN_DECISION_MS`). `ratings.py` fits a **weighted**
   Bradley–Terry; published snapshots read counted, weight ≥ 1 votes only.
 - **Reviewer record**: `services/reviewer.py` computes calibration score (traps),
   consensus agreement vs. verified peers on identical (scenario, model-pair) votes —
@@ -98,7 +98,7 @@ smoothing so undefeated models stay finite. Displayed score =
 `1200 + 400·log10(strength)` (arena-style anchor/scale).
 
 **Uncertainty.** 95% CIs by bootstrap: resample the vote set (default 40 rounds,
-`DESIGNARENA_CI_ROUNDS`), refit, take the 2.5/97.5 percentiles per model.
+`ARENA_CI_ROUNDS`), refit, take the 2.5/97.5 percentiles per model.
 
 **Triggers — one computation, three entry points:**
 
@@ -118,7 +118,7 @@ the background recompute to a worker queue and debounce (see §6).
 
 ## 4. Generation providers
 
-`get_provider_for(model)` routes on `DESIGNARENA_GENERATION_MODE`:
+`get_provider_for(model)` routes on `ARENA_GENERATION_MODE`:
 
 - **`sample` (default)** — offline generator; each roster model has a persona
   (hue, palette mode, radius, font, flavor: brutalist/glass/neon/editorial/playful/
@@ -156,7 +156,7 @@ Email delivery is the placeholder seam: dev mode returns the code in the respons
 
 ## 6. Scale path (deliberately deferred, seams in place)
 
-1. **Postgres**: set `DESIGNARENA_DATABASE_URL`; schema uses portable types; add
+1. **Postgres**: set `ARENA_DATABASE_URL`; schema uses portable types; add
    Alembic when the schema starts moving.
 2. **Async generation**: battle POST returns `generating`; workers fill generations;
    client polls or SSE. Status columns already exist.

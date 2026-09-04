@@ -189,7 +189,7 @@ real ratings pipeline.
   model persona (palette/typography/flavor), deterministic per (model, prompt). This is
   a deliberate scope call: it makes the demo playable end-to-end with no keys, while
   the live vendor adapters (Anthropic/OpenAI/Google/OpenRouter) sit behind
-  `DESIGNARENA_GENERATION_MODE=live` with placeholder keys.
+  `ARENA_GENERATION_MODE=live` with placeholder keys.
 
 ### 3.3 Tournament voting
 - Bracket: Semifinal 1 (A vs B), Semifinal 2 (C vs D), Grand Final (winners),
@@ -241,10 +241,10 @@ real ratings pipeline.
 
 | Placeholder | Where | Swap with |
 |---|---|---|
-| `PLACEHOLDER_ANTHROPIC_API_KEY` etc. | `backend/.env.example`, `app/config.py` | Real vendor keys + `DESIGNARENA_GENERATION_MODE=live` |
-| Login code returned in API/UI | `auth.py` (`dev_return_login_code`) | Resend/SendGrid via `EMAIL_PROVIDER_API_KEY`, set `DESIGNARENA_DEV_LOGIN_CODE=0` |
-| `dev-secret-change-me` session secret | `app/config.py` | Long random `DESIGNARENA_SECRET_KEY` |
-| SQLite file DB | `app/db.py` | `DESIGNARENA_DATABASE_URL=postgresql+psycopg://…` (schema is Postgres-clean) |
+| `PLACEHOLDER_ANTHROPIC_API_KEY` etc. | `backend/.env.example`, `app/config.py` | Real vendor keys + `ARENA_GENERATION_MODE=live` |
+| Login code returned in API/UI | `auth.py` (`dev_return_login_code`) | Resend/SendGrid via `EMAIL_PROVIDER_API_KEY`, set `ARENA_DEV_LOGIN_CODE=0` |
+| `dev-secret-change-me` session secret | `app/config.py` | Long random `ARENA_SECRET_KEY` |
+| SQLite file DB | `app/db.py` | `ARENA_DATABASE_URL=postgresql+psycopg://…` (schema is Postgres-clean) |
 | Open `/api/leaderboard/recompute` | `leaderboard.py` router | Admin auth or remove (batch job covers it) |
 | Live adapters untested against real APIs | `providers/live.py` | One smoke run per vendor once keys exist |
 

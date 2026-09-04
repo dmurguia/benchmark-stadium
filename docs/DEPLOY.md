@@ -18,11 +18,11 @@ environment needed once this is wired — push to `main` and both redeploy.
 
    | Variable | Value | Why |
    |---|---|---|
-   | `DESIGNARENA_DATABASE_URL` | `sqlite:////data/arena.db` | DB lives on the volume (four slashes = absolute path) |
-   | `DESIGNARENA_SECRET_KEY` | long random string (`openssl rand -hex 32`) | session token signing |
-   | `DESIGNARENA_CORS_ORIGINS` | the Vercel prod origin, e.g. `https://calibration-arena.vercel.app` | browser API calls |
-   | `DESIGNARENA_CORS_ORIGIN_REGEX` | `https://.*\.vercel\.app` | Vercel preview deploys |
-   | `DESIGNARENA_AUTO_SEED` | `1` (default) | first boot on an empty volume seeds the demo roster/boards |
+   | `ARENA_DATABASE_URL` | `sqlite:////data/arena.db` | DB lives on the volume (four slashes = absolute path) |
+   | `ARENA_SECRET_KEY` | long random string (`openssl rand -hex 32`) | session token signing |
+   | `ARENA_CORS_ORIGINS` | the Vercel prod origin, e.g. `https://calibration-arena.vercel.app` | browser API calls |
+   | `ARENA_CORS_ORIGIN_REGEX` | `https://.*\.vercel\.app` | Vercel preview deploys |
+   | `ARENA_AUTO_SEED` | `1` (default) | first boot on an empty volume seeds the demo roster/boards |
 
 5. **Settings → Networking → Generate Domain** — this is the public API URL
    the frontend needs.
@@ -49,7 +49,7 @@ backend (allowed by the origin regex).
 - Vercel project ← `calibrationarena.ai` (Cloudflare CNAME per Vercel's
   instructions; DNS-only/grey cloud if the proxy causes redirect loops).
 - Railway service ← `api.calibrationarena.ai` (custom domain on the service),
-  then update `VITE_API_URL` and `DESIGNARENA_CORS_ORIGINS` to match.
+  then update `VITE_API_URL` and `ARENA_CORS_ORIGINS` to match.
 
 ## Headless setup (what Claude does with a token)
 
