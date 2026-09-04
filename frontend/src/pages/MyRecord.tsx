@@ -1,240 +1,256 @@
-import { ArrowRightIcon, BadgeCheckIcon, CheckIcon } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { AuthCard } from "../components/AuthCard";
-import { OnboardingCard } from "../components/OnboardingCard";
-import { Button, Card, Chip, Eyebrow } from "../components/ui";
-import { api, type BattleSummaryOut, type ReviewerStatsOut } from "../lib/api";
-import { useAuth } from "../lib/auth";
-import { CATEGORY_META, VERTICAL_LABELS } from "../lib/view";
+import { useEffect, useState } from 'react'
+import { CheckIcon, LockIcon, ArrowRightIcon, UserRoundIcon } from 'lucide-react'
+import { AppShell } from '../components/app/AppShell'
+import { PaperTexture } from '../components/brand/PaperTexture'
+import { Resolve } from '../components/brand/Resolve'
+import { CalibratedSeal } from '../components/brand/CalibratedSeal'
+import { SpecimenChip } from '../components/brand/SpecimenChip'
+import { api, type ReviewerStatsOut } from '../lib/api'
+import { useAuth } from '../lib/auth'
+import { badgeLadder, calibrationTrend, engagements } from '../data/record'
 
-const LADDER = ["Apprentice", "Calibrated Reviewer", "Top Reviewer"];
-
-const TIER_LABELS: Record<number, string> = {
-  0: "Tier 0 · Self-declared",
-  1: "Tier 1 · Work-domain verified",
-  2: "Tier 2 · License verified",
-  3: "Tier 3 · Named reviewer",
-};
-
-function initials(name: string) {
-  return (
-    name
-      .replace(/[^A-Za-z0-9 ]/g, "")
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase() || "?"
-  );
-}
+const pct = (v: number | null) => (v == null ? '—' : `${Math.round(v)}%`)
 
 export function MyRecord() {
-  const { user, loading, signIn } = useAuth();
-  const [stats, setStats] = useState<ReviewerStatsOut | null>(null);
-  const [sessions, setSessions] = useState<BattleSummaryOut[]>([]);
+  const { user, loading, requestAuth } = useAuth()
+  const [stats, setStats] = useState<ReviewerStatsOut | null>(null)
 
   useEffect(() => {
-    if (!user) return;
-    api<ReviewerStatsOut>("/api/auth/reviewer").then(setStats).catch(() => {});
-    api<BattleSummaryOut[]>("/api/battles")
-      .then((b) => setSessions(b.slice(0, 5)))
-      .catch(() => {});
-  }, [user]);
+    if (!user) return
+    api<ReviewerStatsOut>('/api/auth/reviewer')
+      .then(setStats)
+      .catch(() => setStats(null))
+  }, [user])
 
   if (!loading && !user) {
     return (
-      <div className="flex justify-center pt-10">
-        <AuthCard
-          eyebrow="My Record"
-          title="Your calibration lives here."
-          body="Sign in to see your calibration score, percentile, and badge progress."
-        />
-      </div>
-    );
-  }
-  if (user && !user.vertical) {
-    return (
-      <div className="flex justify-center pt-10">
-        <OnboardingCard
-          onDone={(updated) => {
-            const token = localStorage.getItem("da_token") ?? "";
-            signIn(token, updated);
-          }}
-        />
-      </div>
-    );
-  }
-  if (!user) return null;
-
-  const ladderIndex = stats?.badge.includes("Top") ? 2 : stats?.badge.includes("Calibrated") ? 1 : 0;
-  const cards = [
-    {
-      label: "Calibration score",
-      value: stats?.calibration_pct != null ? `${Math.round(stats.calibration_pct)}%` : "—",
-      note: stats
-        ? `${stats.traps_passed} of ${stats.traps_total} hidden checks caught`
-        : "Judge a session to start",
-    },
-    {
-      label: "Percentile",
-      value: stats?.percentile != null ? `Top ${Math.max(1, Math.round(100 - stats.percentile))}%` : "—",
-      note: `Of ${VERTICAL_LABELS[user.vertical] ?? user.vertical} reviewers this season`,
-    },
-    {
-      label: "Consensus agreement",
-      value: stats?.consensus_pct != null ? `${Math.round(stats.consensus_pct)}%` : "—",
-      note: "Against verified peers on identical comparisons",
-    },
-    {
-      label: "Judgments",
-      value: stats ? `${stats.votes_cast}` : "—",
-      note: stats ? `${stats.votes_cast} cast · ${stats.counted_votes} counted` : "",
-    },
-  ];
-
-  const upgrade =
-    user.tier < 2
-      ? user.vertical === "finance"
-        ? { title: "Verify your CPA license to reach Tier 2", body: "Your votes would carry 1.5× weight on the Finance/ERP boards." }
-        : { title: "Verify your bar admission to reach Tier 2", body: "Your votes would carry 1.5× weight on the Legal boards." }
-      : null;
-
-  return (
-    <div>
-      <header className="mb-8 flex flex-wrap items-start justify-between gap-5 border-b border-hairline pb-6">
-        <div className="flex items-start gap-4">
-          <span
-            aria-hidden="true"
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-forest text-[16px] font-bold text-paper"
-          >
-            {initials(user.display_name || user.email)}
-          </span>
-          <div>
-            <Eyebrow>Reviewer profile</Eyebrow>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">
-              {user.display_name || user.email}
-            </h1>
-            <p className="mt-1 text-[14px] text-muted">
-              {user.role || "Reviewer"} · {VERTICAL_LABELS[user.vertical] ?? user.vertical}
+      <AppShell>
+        <div className="relative flex min-h-screen items-center justify-center px-6">
+          <PaperTexture seed={11} />
+          <div className="relative max-w-sm text-center">
+            <UserRoundIcon className="mx-auto h-7 w-7 text-muted" strokeWidth={1.5} aria-hidden="true" />
+            <h1 className="mt-4 font-display text-[26px] leading-snug text-ink">Your record is yours</h1>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+              Sign in to see your calibration score, percentile, and the badge ladder your judgments feed.
             </p>
+            <button
+              type="button"
+              onClick={() => requestAuth('projects')}
+              className="mt-5 rounded-[8px] bg-spruce px-4 py-2.5 text-[13px] font-bold text-paper transition-colors duration-150 ease-out hover:bg-spruce-hover"
+            >
+              Sign in to continue
+            </button>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Chip tone="solid">{TIER_LABELS[user.tier] ?? `Tier ${user.tier}`}</Chip>
-          {stats ? (
-            <Chip tone="green">
-              <BadgeCheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
-              {stats.badge}
-            </Chip>
-          ) : null}
-        </div>
-      </header>
+      </AppShell>
+    )
+  }
 
-      <section aria-label="Reviewer statistics">
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {cards.map((stat) => (
-            <Card as="li" key={stat.label} className="p-5">
-              <p className="text-[10.5px] font-bold uppercase tracking-[0.14em] text-muted">{stat.label}</p>
-              <p className="mt-2.5 text-2xl font-extrabold tabular-nums tracking-tight text-ink">{stat.value}</p>
-              <p className="mt-1.5 text-[12.5px] leading-snug text-muted">{stat.note}</p>
-            </Card>
-          ))}
-        </ul>
-      </section>
+  const recordStats = [
+    {
+      value: pct(stats?.calibration_pct ?? null),
+      label: 'Calibration score',
+      caption: `Agreement with known-answer items · ${stats?.traps_passed ?? 0}/${stats?.traps_total ?? 0} checks`,
+      highlight: false,
+    },
+    {
+      value: stats?.percentile != null ? `Top ${Math.max(1, 100 - Math.round(stats.percentile))}%` : '—',
+      label: 'Panel percentile',
+      caption: 'Among verified reviewers in your vertical',
+      highlight: true,
+    },
+    {
+      value: pct(stats?.consensus_pct ?? null),
+      label: 'Consensus rate',
+      caption: 'Alignment with the majority panel',
+      highlight: false,
+    },
+    {
+      value: String(stats?.votes_cast ?? 0),
+      label: 'Judgments',
+      caption: `${stats?.counted_votes ?? 0} counted toward the boards`,
+      highlight: false,
+    },
+  ]
 
-      <section className="mt-10" aria-labelledby="ladder-heading">
-        <Eyebrow className="mb-4">
-          <span id="ladder-heading">Badge ladder</span>
-        </Eyebrow>
-        <Card className="p-6">
-          <ol className="flex items-center">
-            {LADDER.map((name, i) => {
-              const state = i < ladderIndex ? "done" : i === ladderIndex ? "current" : "todo";
-              return (
-                <li key={name} className="flex flex-1 items-center last:flex-none">
-                  <div className="flex items-center gap-2.5">
-                    <span
-                      aria-hidden="true"
-                      className={`flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-bold ${
-                        state === "done"
-                          ? "border-forest bg-forest text-paper"
-                          : state === "current"
-                            ? "border-forest bg-moss-tint text-forest"
-                            : "border-hairline bg-paper text-muted"
-                      }`}
-                    >
-                      {state === "done" ? <CheckIcon className="h-3.5 w-3.5" /> : i + 1}
-                    </span>
-                    <span className={`text-[13.5px] ${state === "todo" ? "text-muted" : "font-bold text-ink"}`}>
-                      {name}
-                    </span>
-                  </div>
-                  {i < LADDER.length - 1 ? (
-                    <span aria-hidden="true" className={`mx-4 h-px flex-1 ${state === "done" ? "bg-forest" : "bg-hairline"}`} />
-                  ) : null}
-                </li>
-              );
-            })}
-          </ol>
-          <p className="mt-5 border-t border-hairline pt-4 text-[12.5px] text-muted">
-            Calibrated Reviewer unlocks at an 80% calibration score across 3 checks; Top Reviewer at 90% across 10
-            with a top-quartile consensus record.
-          </p>
-        </Card>
-      </section>
+  const currentBadge = stats?.badge ?? 'Apprentice'
+  const currentIdx = badgeLadder.findIndex((b) => b.name === currentBadge)
+  const qualifies = currentIdx >= 1
 
-      {upgrade ? (
-        <section className="mt-6">
-          <Card className="flex flex-wrap items-center justify-between gap-4 p-5">
+  return (
+    <AppShell>
+      <div className="relative min-h-screen">
+        <PaperTexture seed={11} />
+
+        <div className="relative mx-auto max-w-[1120px] px-6 py-8 lg:px-10">
+          {/* Profile */}
+          <header className="flex flex-wrap items-start justify-between gap-6 border-b border-hairline pb-7">
             <div>
-              <h2 className="text-[15px] font-bold text-ink">{upgrade.title}</h2>
-              <p className="mt-1 text-[13.5px] text-muted">{upgrade.body}</p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Reviewer record</p>
+              <h1 className="mt-2 font-display text-[34px] leading-tight text-ink">
+                {user?.display_name || user?.email || 'Reviewer'}
+              </h1>
+              <p className="mt-1 text-[14px] text-muted">
+                {user?.role || 'Reviewer'} · {user?.vertical || 'Finance'}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-forest/30 bg-moss px-3 py-1 text-[11px] font-bold text-forest">
+                  {currentBadge}
+                </span>
+                <SpecimenChip>{`Tier ${user?.tier ?? 0} weight`}</SpecimenChip>
+              </div>
             </div>
-            <Button title="License verification is a placeholder in the prototype">
-              Verify license <ArrowRightIcon className="h-4 w-4" aria-hidden="true" />
-            </Button>
-          </Card>
-        </section>
-      ) : null}
+            <div className="flex items-center gap-4">
+              <CalibratedSeal size={72} />
+              <div className="max-w-[180px]">
+                <p className="text-[12px] font-bold text-ink">Calibrated Reviewer</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-muted">
+                  A portable credential. Verified by measurement, not résumé.
+                </p>
+              </div>
+            </div>
+          </header>
 
-      <section className="mt-10" aria-labelledby="recent-heading">
-        <Eyebrow className="mb-4">
-          <span id="recent-heading">Recent sessions</span>
-        </Eyebrow>
-        <Card className="overflow-hidden">
-          {sessions.length === 0 ? (
-            <p className="p-6 text-center text-[13.5px] text-muted">
-              No sessions yet —{" "}
-              <Link to="/" className="font-bold text-forest hover:underline">
-                judge your first
-              </Link>
-              .
-            </p>
-          ) : (
-            <ul className="divide-y divide-hairline">
-              {sessions.map((session) => {
-                const meta = CATEGORY_META[session.category];
-                return (
-                  <li key={session.public_id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
-                    <div className="min-w-0">
-                      <p className="line-clamp-1 text-[14px] font-bold text-ink">{session.prompt}</p>
-                      <p className="mt-0.5 text-[12.5px] text-muted">
-                        {meta?.label ?? session.category} ·{" "}
-                        {new Date(session.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </p>
+          {/* Stats */}
+          <section aria-label="Record statistics" className="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {recordStats.map((stat) => (
+              <div key={stat.label} className="rounded-xl border border-hairline bg-card p-5 shadow-whisper">
+                {stat.highlight ? (
+                  <Resolve as="p" delay={220} className="font-display text-[52px] leading-none text-rust">
+                    {stat.value}
+                  </Resolve>
+                ) : (
+                  <p className="font-display text-[52px] leading-none text-ink">{stat.value}</p>
+                )}
+                <p className="mt-3 border-t border-hairline pt-2.5 text-[12px] font-bold text-ink">{stat.label}</p>
+                <p className="mt-0.5 text-[11px] leading-relaxed text-muted">{stat.caption}</p>
+              </div>
+            ))}
+          </section>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <div className="space-y-6">
+              {/* Rust-tinted paid work card */}
+              <section className="rounded-xl border border-rust/30 bg-rust-tint p-6">
+                <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-rust">Paid panel work</p>
+                <h2 className="mt-2 font-display text-[22px] leading-snug text-ink">
+                  {qualifies
+                    ? `Your calibration qualifies you for paid panel work — ${engagements.length} open engagements.`
+                    : 'Calibrated Reviewers unlock paid panel work. Keep judging.'}
+                </h2>
+                <ul className="mt-4 divide-y divide-rust/20 border-t border-rust/20">
+                  {engagements.map((e) => (
+                    <li key={e.title} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                      <span className="min-w-0">
+                        <span className="block text-[13px] font-bold text-ink">{e.title}</span>
+                        <span className="block text-[11px] text-muted">{e.detail}</span>
+                      </span>
+                      <span className="flex items-center gap-3">
+                        <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted">
+                          {e.window}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={!qualifies}
+                          className="flex items-center gap-1.5 rounded-[8px] bg-rust px-3 py-1.5 text-[12px] font-bold text-paper transition-opacity duration-150 ease-out hover:opacity-90 disabled:opacity-40"
+                        >
+                          Apply
+                          <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                        </button>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-muted">
+                  Engagement listings are preview content
+                </p>
+              </section>
+
+              {/* Calibration trend micro chart (demo until monthly history ships) */}
+              <section className="rounded-xl border border-hairline bg-card p-6 shadow-whisper">
+                <div className="flex items-end justify-between">
+                  <h2 className="text-[13px] font-bold text-ink">Calibration score by month</h2>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted">
+                    Preview data
+                  </span>
+                </div>
+                <div
+                  className="mt-5 flex items-end gap-2"
+                  role="img"
+                  aria-label="Calibration score rising from 74% in April to 92% in September"
+                >
+                  {calibrationTrend.map((t, i) => (
+                    <div key={t.label} className="flex flex-1 flex-col items-center gap-1.5">
+                      <span className="font-mono text-[9px] text-muted">{t.value}</span>
+                      <span
+                        className={`w-full ${i === calibrationTrend.length - 1 ? 'bg-rust' : 'bg-ink/70'}`}
+                        style={{ height: `${(t.value / 92) * 96}px` }}
+                      />
+                      <span className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted">{t.label}</span>
                     </div>
-                    <Chip tone={session.status === "complete" ? "green" : "neutral"}>
-                      {session.status === "complete" ? "Complete" : "In progress"}
-                    </Chip>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </Card>
-      </section>
-    </div>
-  );
+                  ))}
+                </div>
+                <div className="mt-1 h-px w-full bg-ink/40" />
+              </section>
+            </div>
+
+            {/* Badge ladder rail */}
+            <aside className="rounded-xl border border-hairline bg-panel p-6">
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">Badge ladder</p>
+              <ol className="mt-5 space-y-0">
+                {badgeLadder.map((badge, i) => {
+                  const state = i < currentIdx ? 'earned' : i === currentIdx ? 'current' : 'locked'
+                  return (
+                    <li key={badge.name} className="relative flex gap-4 pb-7 last:pb-0">
+                      {i < badgeLadder.length - 1 ? (
+                        <span
+                          aria-hidden="true"
+                          className={`absolute left-[11px] top-6 h-full w-px ${
+                            state === 'earned' ? 'bg-forest/40' : 'bg-hairline'
+                          }`}
+                        />
+                      ) : null}
+                      <span
+                        className={`relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                          state === 'locked'
+                            ? 'border-hairline bg-card text-muted/60'
+                            : 'border-forest bg-forest text-paper'
+                        }`}
+                      >
+                        {state === 'locked' ? (
+                          <LockIcon className="h-3 w-3" aria-hidden="true" />
+                        ) : (
+                          <CheckIcon className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <span
+                          className={`block text-[13px] font-bold ${
+                            state === 'locked' ? 'text-muted' : 'text-ink'
+                          }`}
+                        >
+                          {badge.name}
+                          {state === 'current' ? (
+                            <span className="ml-2 border border-rust/40 bg-rust-tint px-1 py-px align-middle font-mono text-[9px] uppercase tracking-[0.12em] text-rust">
+                              Current
+                            </span>
+                          ) : null}
+                        </span>
+                        <span className="mt-0.5 block text-[11px] leading-relaxed text-muted">
+                          {badge.requirement}
+                        </span>
+                      </span>
+                    </li>
+                  )
+                })}
+              </ol>
+              <p className="mt-2 border-t border-hairline pt-4 text-[11px] leading-relaxed text-muted">
+                Tiers are earned on measured agreement with known-answer items — never on volume alone.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  )
 }
