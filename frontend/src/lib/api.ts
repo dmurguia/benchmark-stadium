@@ -1,5 +1,15 @@
 const TOKEN_KEY = "da_token";
 
+// In dev the Vite proxy forwards /api to the local backend, so paths stay
+// relative. In hosted builds (Vercel), set VITE_API_URL to the backend origin
+// (e.g. https://api.calibrationarena.ai or the Railway URL) and every request
+// — fetches and document iframes alike — gets prefixed through apiUrl().
+export const API_BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? "").replace(/\/+$/, "");
+
+export function apiUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
+
 export function getToken(): string | null {
   try {
     return localStorage.getItem(TOKEN_KEY);
@@ -29,7 +39,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
-  const resp = await fetch(path, { ...options, headers: { ...headers, ...(options.headers as object) } });
+  const resp = await fetch(apiUrl(path), { ...options, headers: { ...headers, ...(options.headers as object) } });
   if (!resp.ok) {
     let detail = resp.statusText;
     try {

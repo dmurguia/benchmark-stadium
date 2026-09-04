@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -12,18 +13,47 @@ from .config import get_settings
 from .db import init_db
 from .routers import auth, battles, catalog, leaderboard, releases
 
+def _maybe_seed() -> None:
+    """First boot on a fresh volume: seed the demo roster/votes so the boards
+    aren't empty. No-op whenever any arena model already exists."""
+    if os.getenv("DESIGNARENA_AUTO_SEED", "1") != "1":
+        return
+    from sqlalchemy import select
+
+    from .db import SessionLocal
+    from .models import ArenaModel
+
+    with SessionLocal() as db:
+        if db.execute(select(ArenaModel.id).limit(1)).first() is not None:
+            return
+    import subprocess
+    import sys
+
+    subprocess.run(
+        [sys.executable, "-m", "pipeline.seed"],
+        cwd=str(Path(__file__).resolve().parent.parent),
+        check=True,
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    _maybe_seed()
     yield
 
 
 app = FastAPI(title=get_settings().app_name, lifespan=lifespan)
 
+# Dev servers are always allowed; hosted frontends come from env:
+#   DESIGNARENA_CORS_ORIGINS       comma-separated exact origins (the Vercel prod URL)
+#   DESIGNARENA_CORS_ORIGIN_REGEX  e.g. https://.*\.vercel\.app for preview deploys
+_cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
+_cors_origins += [o.strip() for o in os.getenv("DESIGNARENA_CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
-    # Vite dev server origins; same-origin in production (backend serves the build).
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=_cors_origins,
+    allow_origin_regex=os.getenv("DESIGNARENA_CORS_ORIGIN_REGEX") or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

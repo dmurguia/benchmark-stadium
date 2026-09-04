@@ -7,7 +7,7 @@ import { SpecimenChip } from '../components/brand/SpecimenChip'
 import { PixelAuthorChip } from '../components/brand/PixelAuthorChip'
 import { AuthPanel } from '../components/app/AuthPanel'
 import { DocModal } from '../components/DocPanel'
-import { api, type BattleOut } from '../lib/api'
+import { api, apiUrl, type BattleOut } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { CATEGORY_META, scenarioTitle } from '../lib/view'
 
@@ -58,7 +58,7 @@ function LiveDocPanel({
       <iframe
         title={label}
         sandbox="allow-scripts"
-        src={`/api/battles/${battleId}/generations/${position}/html`}
+        src={apiUrl(`/api/battles/${battleId}/generations/${position}/html`)}
         className="h-full w-full flex-1 border-0 bg-white"
       />
     </article>
