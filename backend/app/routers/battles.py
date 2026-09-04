@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import HTMLResponse
 from sqlalchemy import select
@@ -148,11 +150,24 @@ def generation_html(public_id: str, position: int, db: Session = Depends(get_db)
     return HTMLResponse(
         content=gen.html,
         headers={
-            # Rendered inside a sandboxed iframe; keep it self-contained.
-            "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; img-src data:; script-src 'unsafe-inline'; media-src data:",
-            "X-Frame-Options": "SAMEORIGIN",
+            # Rendered inside a sandboxed iframe; keep it self-contained, and
+            # allow framing only from our own frontends (dev servers, the
+            # configured CORS origins, and Vercel previews via
+            # ARENA_FRAME_ANCESTORS — space-separated CSP sources).
+            "Content-Security-Policy": (
+                "default-src 'none'; style-src 'unsafe-inline'; img-src data:; "
+                "script-src 'unsafe-inline'; media-src data:; "
+                f"frame-ancestors {_frame_ancestors()}"
+            ),
         },
     )
+
+
+def _frame_ancestors() -> str:
+    ancestors = ["'self'", "http://localhost:5173", "http://127.0.0.1:5173"]
+    ancestors += [o.strip() for o in os.getenv("ARENA_CORS_ORIGINS", "").split(",") if o.strip()]
+    ancestors += os.getenv("ARENA_FRAME_ANCESTORS", "https://*.vercel.app").split()
+    return " ".join(dict.fromkeys(ancestors))
 
 
 def _recompute_after_battle(category: str) -> None:
