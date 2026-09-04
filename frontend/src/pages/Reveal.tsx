@@ -1,6 +1,8 @@
 import { ArrowDownIcon, ArrowUpIcon, CheckCircle2Icon, XCircleIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { AppShell } from "../components/app/AppShell";
+import { PaperTexture } from "../components/brand/PaperTexture";
 import { Button, Card, Chip, Eyebrow } from "../components/ui";
 import { api, type BattleOut, type GenerationOut, type LeaderboardOut } from "../lib/api";
 import { CATEGORY_META, scenarioTitle } from "../lib/view";
@@ -48,15 +50,22 @@ export function Reveal() {
     return map;
   }, [battle]);
 
-  if (!battle) return <p className="pt-10 text-center text-[14px] text-muted">Opening the reveal…</p>;
+  if (!battle)
+    return (
+      <AppShell>
+        <p className="pt-16 text-center text-[14px] text-muted">Opening the reveal…</p>
+      </AppShell>
+    );
   if (battle.status !== "complete") {
     return (
-      <p className="pt-10 text-center text-[14px] text-muted">
-        This session is still in progress.{" "}
-        <button className="font-bold text-forest underline" onClick={() => navigate(`/judge/${battle.public_id}`)}>
-          Resume judging
-        </button>
-      </p>
+      <AppShell>
+        <p className="pt-16 text-center text-[14px] text-muted">
+          This session is still in progress.{" "}
+          <button className="font-bold text-forest underline" onClick={() => navigate(`/judge/${battle.public_id}`)}>
+            Resume judging
+          </button>
+        </p>
+      </AppShell>
     );
   }
 
@@ -91,10 +100,13 @@ export function Reveal() {
   const passed = battle.trap_outcome?.passed;
 
   return (
-    <div>
+    <AppShell>
+      <div className="relative min-h-screen">
+      <PaperTexture seed={47} />
+      <div className="relative mx-auto max-w-[1120px] px-6 py-10 lg:px-10">
       <header className="mb-8">
         <Eyebrow>{scenarioTitle(battle.scenario_id)}</Eyebrow>
-        <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-ink">Session complete.</h1>
+        <h1 className="mt-3 font-display text-[34px] leading-tight text-ink">Session complete.</h1>
         <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
           Five comparisons cast. Here is who you were actually reading.
         </p>
@@ -218,6 +230,8 @@ export function Reveal() {
           See the boards
         </Button>
       </div>
-    </div>
+      </div>
+      </div>
+    </AppShell>
   );
 }

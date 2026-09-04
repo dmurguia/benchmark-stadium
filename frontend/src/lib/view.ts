@@ -1,12 +1,8 @@
-// Adapters from API shapes (lib/api.ts) to the view types the design's board
-// components consume (src/data/leaderboards.ts).
-import type { Competitor, EmptyChair, ReleaseView } from "../data/leaderboards";
-import type { ArenaModelOut, DeclinedVendorOut, LeaderboardEntryOut, ReleaseOut } from "./api";
-
-export const VERTICAL_LABELS: Record<string, string> = {
-  legal: "Legal",
-  finance: "Finance/ERP",
-};
+// Adapters from API shapes (lib/api.ts) to the view shapes the redesign's
+// board components consume. Live rows never mix with the demo data in
+// src/data/competitors.ts.
+import type { DeclinedVendorOut, LeaderboardEntryOut, ReleaseOut } from "./api";
+import type { EmptyChair, ReleaseRadarEntry } from "../types/arena";
 
 export const CATEGORY_META: Record<string, { label: string; vertical: string }> = {
   "contract-redline": { label: "Contract Redline", vertical: "Legal" },
@@ -24,50 +20,64 @@ export function scenarioTitle(scenarioId: string): string {
     .map((w, i) => {
       const upper = w.toUpperCase();
       if (["nda", "msa", "coa", "gl", "ip", "s4", "q3"].includes(w)) return upper;
+      if (w === "saas") return "SaaS";
+      if (w === "erp") return "ERP";
       if (i > 0 && TITLE_SMALL_WORDS.has(w)) return w;
       return w.charAt(0).toUpperCase() + w.slice(1);
     })
     .join(" ");
 }
 
-export function productProvenance(model: ArenaModelOut): string {
-  return `${model.organization} · ${model.provenance} · ${model.submitted_version}`;
+/** A measured row from the live boards, in the shape the redesign renders. */
+export interface LiveRow {
+  rank: number;
+  previousRank: number;
+  name: string;
+  org: string;
+  kind: string;
+  provenance?: string;
+  score: number;
+  ciLow: number;
+  ciHigh: number;
+  judgments: number;
+  winRate: number;
 }
 
-export function toCompetitor(e: LeaderboardEntryOut): Competitor {
+export function toLiveRow(e: LeaderboardEntryOut): LiveRow {
   const isProduct = e.model.kind === "product";
   return {
     rank: e.rank,
-    delta: e.rank_delta ?? 0,
+    previousRank: e.rank + (e.rank_delta ?? 0),
     name: e.model.name,
     org: e.model.organization,
-    isProduct,
-    provenance: isProduct ? productProvenance(e.model) : undefined,
+    kind: e.model.kind,
+    provenance: isProduct
+      ? `${e.model.provenance} · ${e.model.submitted_version}`
+      : undefined,
     score: Math.round(e.rating),
-    ci: `±${Math.max(1, Math.round((e.ci_high - e.ci_low) / 2))}`,
+    ciLow: Math.round(e.ci_low),
+    ciHigh: Math.round(e.ci_high),
     judgments: e.votes,
-    winRate: Math.round(e.win_rate * 100),
+    winRate: e.win_rate,
   };
 }
 
 export function toEmptyChair(d: DeclinedVendorOut): EmptyChair {
-  return { name: d.name, org: d.organization, note: d.note };
+  return { name: d.name, note: `${d.organization} — ${d.note}` };
 }
 
-export function toReleaseView(r: ReleaseOut): ReleaseView {
-  return {
-    id: r.id,
-    competitor: r.model.name,
-    label: r.version,
-    org: r.model.organization,
-    date: new Date(r.released_at).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }),
-    reruns: `${r.rerun_votes.toLocaleString("en-US")} re-run judgments`,
-    movements: r.movement
-      .filter((m) => m.before_rank != null)
-      .map((m) => ({ board: m.category_name, from: m.before_rank as number, to: m.after_rank })),
-  };
+/** One release can move several boards; the radar shows one cell per move. */
+export function toRadarEntries(r: ReleaseOut): ReleaseRadarEntry[] {
+  const date = new Date(r.released_at).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const verb = r.model.kind === "product" ? "submitted" : "released";
+  const label = r.version ? `${r.model.name} ${r.version}` : r.model.name;
+  return r.movement
+    .filter((m) => m.before_rank != null && m.before_rank !== m.after_rank)
+    .map((m) => ({
+      name: label,
+      released: `${verb} ${date}`,
+      primitive: m.category_name,
+      from: m.before_rank as number,
+      to: m.after_rank,
+    }));
 }

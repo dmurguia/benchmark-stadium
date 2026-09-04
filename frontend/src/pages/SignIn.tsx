@@ -1,39 +1,30 @@
-import { useNavigate } from "react-router-dom";
-import { AuthCard } from "../components/AuthCard";
-import { OnboardingCard } from "../components/OnboardingCard";
-import { useAuth } from "../lib/auth";
+import { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { AppShell } from '../components/app/AppShell'
+import { PaperTexture } from '../components/brand/PaperTexture'
+import { DialMark } from '../components/brand/DialMark'
+import { AuthPanel } from '../components/app/AuthPanel'
+import { useAuth } from '../lib/auth'
 
 export function SignIn() {
-  const navigate = useNavigate();
-  const { user, signIn } = useAuth();
+  const { user } = useAuth()
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) navigate('/', { replace: true })
+  }, [user, navigate])
 
   return (
-    <div className="flex justify-center pt-10">
-      {user ? (
-        user.vertical ? (
-          <p className="text-[14px] text-muted">
-            You're signed in.{" "}
-            <button className="font-bold text-forest underline" onClick={() => navigate("/")}>
-              Back to the arena
-            </button>
-          </p>
-        ) : (
-          <OnboardingCard
-            onDone={(updated) => {
-              // Token unchanged; refresh the cached user with vertical + role.
-              const token = localStorage.getItem("da_token") ?? "";
-              signIn(token, updated);
-              navigate("/record");
-            }}
-          />
-        )
-      ) : (
-        <AuthCard
-          eyebrow="Sign in"
-          title="Judge with your name behind it."
-          body="Passwordless — we send a one-time code. Use your work email so your votes carry full weight."
-        />
-      )}
-    </div>
-  );
+    <AppShell>
+      <div className="relative flex min-h-screen items-center justify-center px-6">
+        <PaperTexture seed={19} />
+        <div className="relative w-full max-w-[420px] rounded-xl border border-hairline bg-card p-7 shadow-lift">
+          <DialMark size={26} className="text-ink" title="Calibrated Co." />
+          <div className="mt-4">
+            <AuthPanel onDone={() => navigate('/')} />
+          </div>
+        </div>
+      </div>
+    </AppShell>
+  )
 }
