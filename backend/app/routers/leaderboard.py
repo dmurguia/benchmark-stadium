@@ -1,23 +1,38 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..categories import OVERALL, is_valid_category
+from ..categories import CATEGORIES, OVERALL, is_valid_category
 from ..db import get_db
-from ..schemas import ArenaModelOut, LeaderboardEntryOut, LeaderboardOut
+from ..models import ArenaModel
+from ..schemas import ArenaModelOut, DeclinedVendorOut, LeaderboardEntryOut, LeaderboardOut
 from ..services.leaderboard import compute_all_snapshots, latest_snapshot, previous_ranks
 
 router = APIRouter(prefix="/api/leaderboard", tags=["leaderboard"])
+
+
+def _declined_vendors(db: Session, category: str) -> list[DeclinedVendorOut]:
+    """Invited vendors missing from this board — rendered as empty chairs."""
+    q = select(ArenaModel).where(ArenaModel.kind == "declined")
+    if category != OVERALL:
+        q = q.where(ArenaModel.vertical == CATEGORIES[category]["vertical"])
+    return [
+        DeclinedVendorOut(name=m.name, organization=m.organization, vertical=m.vertical, note=m.description)
+        for m in db.scalars(q.order_by(ArenaModel.name))
+    ]
 
 
 @router.get("/{category}", response_model=LeaderboardOut)
 def leaderboard(category: str, db: Session = Depends(get_db)) -> LeaderboardOut:
     if category != OVERALL and not is_valid_category(category):
         raise HTTPException(status_code=404, detail=f"Unknown category '{category}'.")
+    declined = _declined_vendors(db, category)
     snap = latest_snapshot(db, category)
     if snap is None:
-        return LeaderboardOut(category=category, algo="bradley-terry", computed_at=None, vote_count=0, entries=[])
+        return LeaderboardOut(category=category, algo="bradley-terry", computed_at=None, vote_count=0,
+                              entries=[], declined=declined)
     prev = previous_ranks(db, category)
     return LeaderboardOut(
         category=category,
@@ -40,6 +55,7 @@ def leaderboard(category: str, db: Session = Depends(get_db)) -> LeaderboardOut:
             )
             for e in snap.entries
         ],
+        declined=declined,
     )
 
 

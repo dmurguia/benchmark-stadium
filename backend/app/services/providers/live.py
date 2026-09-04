@@ -44,7 +44,7 @@ def _user_prompt(prompt: str, category: str) -> str:
 
 
 class AnthropicProvider:
-    async def generate(self, model: ArenaModel, prompt: str, category: str) -> GenerationResult:
+    async def generate(self, model: ArenaModel, prompt: str, category: str, scenario: dict | None = None) -> GenerationResult:
         key = _require_key(get_settings().anthropic_api_key, "Anthropic")
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=180) as client:
@@ -64,7 +64,7 @@ class AnthropicProvider:
 
 
 class OpenAIProvider:
-    async def generate(self, model: ArenaModel, prompt: str, category: str) -> GenerationResult:
+    async def generate(self, model: ArenaModel, prompt: str, category: str, scenario: dict | None = None) -> GenerationResult:
         key = _require_key(get_settings().openai_api_key, "OpenAI")
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=180) as client:
@@ -85,7 +85,7 @@ class OpenAIProvider:
 
 
 class GoogleProvider:
-    async def generate(self, model: ArenaModel, prompt: str, category: str) -> GenerationResult:
+    async def generate(self, model: ArenaModel, prompt: str, category: str, scenario: dict | None = None) -> GenerationResult:
         key = _require_key(get_settings().google_api_key, "Google")
         start = time.monotonic()
         model_id = model.provider_model_id or model.slug
@@ -106,7 +106,7 @@ class GoogleProvider:
 class OpenRouterProvider:
     """Catch-all for models without a first-party adapter (GLM, DeepSeek, Qwen, ...)."""
 
-    async def generate(self, model: ArenaModel, prompt: str, category: str) -> GenerationResult:
+    async def generate(self, model: ArenaModel, prompt: str, category: str, scenario: dict | None = None) -> GenerationResult:
         key = _require_key(get_settings().openrouter_api_key, "OpenRouter")
         start = time.monotonic()
         async with httpx.AsyncClient(timeout=180) as client:

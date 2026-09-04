@@ -1,44 +1,28 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { ArrowRightIcon, BadgeCheckIcon, EyeIcon, TargetIcon, ZapIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import Monogram from "../components/Monogram";
-import { api, ApiError, type ArenaModelOut, type BattleOut, type CategoryOut, type LeaderboardOut } from "../lib/api";
-import { useAuth } from "../lib/auth";
+import { PromptArena } from "../components/PromptArena";
+import { Card, Chip, Eyebrow } from "../components/ui";
+import { api, type BattleOut, type CategoryOut, type ReleaseOut, type ScenarioOut } from "../lib/api";
+import { VERTICAL_LABELS } from "../lib/view";
 
-const EXAMPLES: Record<string, string[]> = {
-  website: [
-    "A landing page for a coffee subscription called Driftwood",
-    "A portfolio site for a brutalist architecture studio",
-    "A launch page for a sleep-tracking app called Lull",
-  ],
-  "ui-component": [
-    "A pricing card for a pro plan with a popular badge",
-    "A sign-up form with social login",
-    "A music player card for a lo-fi radio app",
-  ],
-  dataviz: [
-    "A weekly activity chart for a running app",
-    "Market share breakdown of browser engines",
-    "Signups trend over time for a beta launch",
-  ],
-  game: [
-    "A game where you catch falling gems in a neon city",
-    "A reaction game about catching shooting stars",
-  ],
-  "svg-logo": [
-    "A logo for a space startup called Nova",
-    "A mark for a coffee brand called Ember",
-  ],
-  "ascii-art": ["A fox in ASCII art", "A rocket launching in ASCII"],
-};
-
-const CATEGORY_ICONS: Record<string, string> = {
-  website: "🌐",
-  "ui-component": "🧩",
-  dataviz: "📊",
-  game: "🎮",
-  "svg-logo": "✒️",
-  "ascii-art": "⌨️",
-};
+const PAYOFFS = [
+  {
+    icon: TargetIcon,
+    title: "Prove your eye",
+    body: "Hidden calibration checks are seeded into every session. Catch the flawed draft and your reviewer weight holds.",
+  },
+  {
+    icon: BadgeCheckIcon,
+    title: "A portable credential",
+    body: "Earn the Calibrated Reviewer badge and a percentile against verified peers in your vertical.",
+  },
+  {
+    icon: EyeIcon,
+    title: "Know before your boss buys",
+    body: "See which foundation models and vendor products actually hold up on the work you do every week.",
+  },
+];
 
 interface StatsOut {
   votes: number;
@@ -48,232 +32,136 @@ interface StatsOut {
   categories: number;
 }
 
-export default function Home() {
-  const { user, loading } = useAuth();
+type ScenarioCard = ScenarioOut & { category: string; vertical: string };
+
+export function Home() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<CategoryOut[]>([]);
-  const [category, setCategory] = useState("website");
-  const [prompt, setPrompt] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [top, setTop] = useState<LeaderboardOut | null>(null);
+  const [cards, setCards] = useState<ScenarioCard[]>([]);
+  const [release, setRelease] = useState<ReleaseOut | null>(null);
   const [stats, setStats] = useState<StatsOut | null>(null);
-  const [models, setModels] = useState<ArenaModelOut[]>([]);
+  const [busyCard, setBusyCard] = useState<string | null>(null);
 
   useEffect(() => {
-    api<CategoryOut[]>("/api/categories").then(setCategories).catch(() => {});
-    api<LeaderboardOut>("/api/leaderboard/overall").then(setTop).catch(() => {});
+    api<ReleaseOut[]>("/api/releases?limit=1")
+      .then((rs) => setRelease(rs[0] ?? null))
+      .catch(() => {});
     api<StatsOut>("/api/stats").then(setStats).catch(() => {});
-    api<ArenaModelOut[]>("/api/models").then(setModels).catch(() => {});
+    api<CategoryOut[]>("/api/categories")
+      .then(async (cats) => {
+        // One card per vertical flavor: a redline, a risk review, a finance task.
+        const picks = ["contract-redline", "clause-risk", "journal-entry"].filter((slug) =>
+          cats.some((c) => c.slug === slug),
+        );
+        const results = await Promise.all(
+          picks.map(async (slug) => {
+            const scenarios = await api<ScenarioOut[]>(`/api/scenarios/${slug}`);
+            const cat = cats.find((c) => c.slug === slug)!;
+            return scenarios[0]
+              ? [{ ...scenarios[0], category: slug, vertical: VERTICAL_LABELS[cat.vertical] ?? cat.vertical }]
+              : [];
+          }),
+        );
+        setCards(results.flat());
+      })
+      .catch(() => {});
   }, []);
 
-  function surprise() {
-    const pool = EXAMPLES[category] ?? [];
-    const next = pool[Math.floor(Math.random() * pool.length)] ?? "";
-    setPrompt(next);
-  }
-
-  async function submit(e: FormEvent) {
-    e.preventDefault();
-    if (!prompt.trim() || submitting) return;
-    if (!loading && !user) {
-      navigate("/login", { state: { from: "/" } });
-      return;
-    }
-    setSubmitting(true);
-    setError(null);
+  async function judgeScenario(card: ScenarioCard) {
+    setBusyCard(card.id);
     try {
       const battle = await api<BattleOut>("/api/battles", {
         method: "POST",
-        body: JSON.stringify({ prompt, category }),
+        body: JSON.stringify({ category: card.category, scenario_id: card.id }),
       });
-      navigate(`/battle/${battle.public_id}`, { state: { fresh: true } });
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) {
-        navigate("/login");
-        return;
-      }
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-    } finally {
-      setSubmitting(false);
+      navigate(`/judge/${battle.public_id}`);
+    } catch {
+      setBusyCard(null);
     }
   }
 
-  const placeholder = (EXAMPLES[category] ?? [])[0] ?? "Describe what you want to create...";
-
   return (
-    <main className="relative overflow-hidden">
-      {/* ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[520px]"
-        style={{
-          background:
-            "radial-gradient(50% 60% at 50% 0%, rgba(124,92,255,0.22), transparent 70%), radial-gradient(30% 40% at 80% 10%, rgba(245,184,61,0.08), transparent 70%)",
-        }}
-      />
+    <div>
+      <section className="pt-4 text-center">
+        <Eyebrow>The arena for work you sign your name to</Eyebrow>
+        <h1 className="mx-auto mt-4 max-w-2xl text-[42px] font-extrabold leading-[1.1] tracking-tight text-ink">
+          Which AI is actually good at your job?
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-[14.5px] leading-relaxed text-muted">
+          Describe the work. We stage it blind against {stats ? stats.models : "18"} competitors and you call the
+          winner.
+        </p>
+      </section>
 
-      <div className="relative mx-auto max-w-5xl px-4 pb-24">
-        <section className="pt-16 text-center sm:pt-20">
-          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.3em] text-arena-bright">
-            The crowdsourced AI design benchmark
-          </p>
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-6xl">
-            What are you creating <span className="text-arena-bright">today?</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-ink-400">
-            Four anonymous AI models design it. You judge the tournament. Every vote moves the global leaderboard.
-          </p>
-        </section>
+      <PromptArena />
 
-        <form onSubmit={submit} className="mx-auto mt-10 max-w-3xl">
-          <div className="card overflow-hidden shadow-[0_20px_80px_rgba(124,92,255,0.12)] focus-within:border-arena">
-            <div className="flex items-center gap-2 border-b border-ink-800 px-5 py-2.5 text-sm text-ink-400">
-              <span className="flex h-5 w-5 items-center justify-center rounded bg-arena text-[11px]">⚔️</span>
-              Ask Design Arena to create…
-            </div>
-            <textarea
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submit(e);
-              }}
-              rows={3}
-              placeholder={placeholder}
-              className="w-full resize-none bg-transparent px-5 py-4 text-lg outline-none placeholder:text-ink-600"
-            />
-            <div className="grid grid-cols-3 gap-2 px-4 pb-3 sm:grid-cols-6">
-              {categories.map((c) => (
-                <button
-                  key={c.slug}
-                  type="button"
-                  onClick={() => setCategory(c.slug)}
-                  title={c.blurb}
-                  className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-xs transition ${
-                    category === c.slug
-                      ? "border-arena bg-arena/15 text-arena-bright"
-                      : "border-ink-800 text-ink-400 hover:border-ink-600 hover:text-ink-200"
-                  }`}
-                >
-                  <span className="text-lg leading-none">{CATEGORY_ICONS[c.slug] ?? "✨"}</span>
-                  {c.name}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center justify-between border-t border-ink-800 px-4 py-3">
-              <button type="button" onClick={surprise} className="text-sm text-ink-400 transition hover:text-ink-200">
-                🎲 Surprise me
+      <section aria-labelledby="examples-heading">
+        <Eyebrow className="mb-4">
+          <span id="examples-heading">Or start from a live scenario</span>
+        </Eyebrow>
+        <ul className="grid gap-4 md:grid-cols-3">
+          {cards.map((scenario) => (
+            <Card as="li" key={scenario.id} className="flex flex-col p-5">
+              <Chip tone="neutral" className="self-start">
+                {scenario.vertical}
+              </Chip>
+              <h3 className="mt-3 text-[15px] font-bold text-ink">{scenario.title}</h3>
+              <p className="mt-2 flex-1 text-[13.5px] leading-relaxed text-muted">{scenario.brief}</p>
+              <button
+                type="button"
+                onClick={() => judgeScenario(scenario)}
+                disabled={busyCard !== null}
+                className="mt-4 inline-flex items-center gap-1.5 self-start rounded-lg border border-hairline px-3 py-1.5 text-[13px] font-semibold text-ink transition-colors hover:bg-panel disabled:opacity-60"
+              >
+                {busyCard === scenario.id ? "Staging…" : "Judge this"}{" "}
+                <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
               </button>
-              <button type="submit" disabled={submitting || !prompt.trim()} className="btn-primary">
-                {submitting ? "Summoning four models…" : "Start battle →"}
-              </button>
-            </div>
-          </div>
-          {error && <p className="mt-3 text-center text-sm text-red-400">{error}</p>}
-          {!loading && !user && (
-            <p className="mt-3 text-center text-sm text-ink-400">
-              You'll be asked to sign in first — battles are saved to your account.
-            </p>
-          )}
-        </form>
+            </Card>
+          ))}
+        </ul>
+      </section>
 
-        {models.length > 0 && (
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-ink-400">
-            <span className="text-xs uppercase tracking-widest text-ink-600">In the arena</span>
-            {models.slice(0, 7).map((m) => (
-              <span key={m.id} className="flex items-center gap-1.5">
-                <Monogram name={m.name} size={18} className="!rounded-md" />
-                {m.name}
+      {release ? (
+        <section className="mt-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#e0c4b9] bg-rust-tint px-5 py-4">
+            <p className="flex items-center gap-2.5 text-[13.5px] text-ink">
+              <ZapIcon className="h-4 w-4 shrink-0 text-rust" aria-hidden="true" />
+              <span>
+                <strong className="font-bold">{release.model.name}</strong> shipped a {release.version} — every
+                board it competes on just re-ran.
               </span>
-            ))}
-            <span className="text-ink-600">+{Math.max(models.length - 7, 0)} more</span>
-          </div>
-        )}
-
-        {stats && (
-          <div className="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
-            {[
-              [stats.votes.toLocaleString(), "votes cast"],
-              [stats.battles.toLocaleString(), "battles fought"],
-              [String(stats.models), "models ranked"],
-              [String(stats.categories), "categories"],
-            ].map(([v, l]) => (
-              <div key={l} className="card px-4 py-4 text-center">
-                <div className="font-display text-2xl font-bold text-arena-bright">{v}</div>
-                <div className="mt-0.5 text-xs text-ink-400">{l}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {top && top.entries.length > 0 && (
-          <section className="mt-16">
-            <div className="mb-4 flex items-baseline justify-between">
-              <h2 className="font-display text-xl font-bold">Current champions</h2>
-              <Link to="/leaderboard" className="text-sm text-arena-bright hover:underline">
-                Full leaderboard →
-              </Link>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {top.entries.slice(0, 3).map((e) => (
-                <div
-                  key={e.model.id}
-                  className={`card flex items-center gap-4 p-4 ${e.rank === 1 ? "border-gold/50" : ""}`}
-                >
-                  <span className="text-2xl">{e.rank === 1 ? "🥇" : e.rank === 2 ? "🥈" : "🥉"}</span>
-                  <Monogram name={e.model.name} size={40} />
-                  <div className="min-w-0">
-                    <div className="truncate font-semibold">{e.model.name}</div>
-                    <div className="text-xs text-ink-400">
-                      {e.model.organization} · {Math.round(e.rating)} pts
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <footer className="mt-20 grid gap-8 border-t border-ink-800 pt-10 text-sm sm:grid-cols-3">
-          <div>
-            <div className="mb-3 font-display font-bold">Create</div>
-            <div className="flex flex-col gap-2 text-ink-400">
-              {categories.map((c) => (
-                <button
-                  key={c.slug}
-                  className="w-fit transition hover:text-ink-200"
-                  onClick={() => {
-                    setCategory(c.slug);
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                  }}
-                >
-                  {c.name}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="mb-3 font-display font-bold">Leaderboards</div>
-            <div className="flex flex-col gap-2 text-ink-400">
-              <Link to="/leaderboard" className="transition hover:text-ink-200">
-                Overall
-              </Link>
-              {categories.map((c) => (
-                <Link key={c.slug} to="/leaderboard" className="transition hover:text-ink-200">
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-          <div>
-            <div className="mb-3 font-display font-bold">How it works</div>
-            <p className="leading-relaxed text-ink-400">
-              Every battle pits four randomly drawn models against each other, anonymously. Your pairwise votes fit a
-              Bradley–Terry model — the same statistics behind the big arenas — and rankings recompute the moment a
-              battle ends.
             </p>
+            <Link
+              to="/leaderboards"
+              className="inline-flex items-center gap-1.5 text-[13px] font-bold text-rust hover:underline"
+            >
+              See the movement <ArrowRightIcon className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
           </div>
-        </footer>
-      </div>
-    </main>
+        </section>
+      ) : null}
+
+      <section className="mt-12" aria-labelledby="payoff-heading">
+        <Eyebrow className="mb-4">
+          <span id="payoff-heading">Why judge</span>
+        </Eyebrow>
+        <ul className="grid gap-4 md:grid-cols-3">
+          {PAYOFFS.map(({ icon: Icon, title, body }) => (
+            <Card as="li" key={title} className="p-5">
+              <Icon className="h-5 w-5 text-forest" aria-hidden="true" />
+              <h3 className="mt-3 text-[15px] font-bold text-ink">{title}</h3>
+              <p className="mt-2 text-[13.5px] leading-relaxed text-muted">{body}</p>
+            </Card>
+          ))}
+        </ul>
+      </section>
+
+      <footer className="mt-12 border-t border-hairline pt-5">
+        <p className="text-[12.5px] font-semibold tracking-wide text-muted">
+          {stats
+            ? `${stats.votes.toLocaleString("en-US")} judgments · ${stats.models} competitors · ${stats.categories} boards`
+            : "Loading the season…"}
+        </p>
+      </footer>
+    </div>
   );
 }

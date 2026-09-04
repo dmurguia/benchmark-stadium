@@ -8,7 +8,8 @@ from sqlalchemy.orm import Session, selectinload
 from ..categories import OVERALL, is_valid_category
 from ..db import SessionLocal, get_db
 from ..deps import get_current_user, get_current_user_optional
-from ..models import ArenaModel, Battle, Generation, User
+from ..models import ArenaModel, Battle, Generation, TrapResult, User
+from ..scenarios import get_scenario
 from ..schemas import (
     ArenaModelOut,
     BattleCreateIn,
@@ -16,6 +17,7 @@ from ..schemas import (
     BattleSummaryOut,
     GenerationOut,
     MatchOut,
+    TrapOutcomeOut,
     VoteIn,
 )
 from ..services import arena
@@ -38,12 +40,18 @@ def _load_battle(db: Session, public_id: str) -> Battle:
     return battle
 
 
-def _serialize(battle: Battle) -> BattleOut:
+def _serialize(battle: Battle, db: Session | None = None) -> BattleOut:
     revealed = battle.status == "complete"
     current = arena.current_match(battle)
+    trap_outcome = None
+    if revealed and db is not None:
+        tr = db.scalars(select(TrapResult).where(TrapResult.battle_id == battle.id)).first()
+        if tr is not None:
+            trap_outcome = TrapOutcomeOut(passed=tr.passed)
     return BattleOut(
         public_id=battle.public_id,
         category=battle.category,
+        scenario_id=battle.scenario_id,
         prompt=battle.prompt,
         status=battle.status,
         created_at=battle.created_at,
@@ -54,6 +62,7 @@ def _serialize(battle: Battle) -> BattleOut:
                 status=g.status,
                 latency_ms=g.latency_ms,
                 model=ArenaModelOut.model_validate(g.model) if revealed else None,
+                is_trap=g.is_trap if revealed else False,
             )
             for g in battle.generations
         ],
@@ -62,6 +71,7 @@ def _serialize(battle: Battle) -> BattleOut:
                 id=m.id,
                 round=m.round,
                 order_index=m.order_index,
+                is_trap=m.is_trap,
                 a_generation_id=m.a_generation_id,
                 b_generation_id=m.b_generation_id,
                 winner_generation_id=m.winner_generation_id,
@@ -69,6 +79,7 @@ def _serialize(battle: Battle) -> BattleOut:
             for m in battle.matches
         ],
         current_match_id=current.id if current else None,
+        trap_outcome=trap_outcome,
     )
 
 
@@ -76,15 +87,21 @@ def _serialize(battle: Battle) -> BattleOut:
 async def create_battle(
     payload: BattleCreateIn,
     db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
+    # Prompt-first front door (BS-13): guests get a real blind session with no
+    # signup; their votes carry zero board weight until they verify.
+    user: User | None = Depends(get_current_user_optional),
 ) -> BattleOut:
     if not is_valid_category(payload.category):
         raise HTTPException(status_code=400, detail=f"Unknown category '{payload.category}'.")
     try:
-        battle = await arena.create_battle(db, user, payload.prompt.strip(), payload.category)
+        scenario = get_scenario(payload.category, payload.scenario_id)
+    except KeyError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    try:
+        battle = await arena.create_battle(db, user, payload.category, scenario)
     except arena.ArenaError as e:
         raise HTTPException(status_code=422, detail=str(e))
-    return _serialize(_load_battle(db, battle.public_id))
+    return _serialize(_load_battle(db, battle.public_id), db)
 
 
 @router.get("", response_model=list[BattleSummaryOut])
@@ -119,7 +136,7 @@ def my_battles(db: Session = Depends(get_db), user: User = Depends(get_current_u
 
 @router.get("/{public_id}", response_model=BattleOut)
 def get_battle(public_id: str, db: Session = Depends(get_db)) -> BattleOut:
-    return _serialize(_load_battle(db, public_id))
+    return _serialize(_load_battle(db, public_id), db)
 
 
 @router.get("/{public_id}/generations/{position}/html", response_class=HTMLResponse)
@@ -166,4 +183,4 @@ def vote(
     if battle.status == "complete":
         background.add_task(_recompute_after_battle, battle.category)
 
-    return _serialize(_load_battle(db, public_id))
+    return _serialize(_load_battle(db, public_id), db)

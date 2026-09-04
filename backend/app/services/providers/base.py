@@ -17,33 +17,31 @@ class GenerationResult:
 
 
 CATEGORY_SYSTEM_PROMPTS: dict[str, str] = {
-    "website": (
-        "You are competing in a blind design arena. Produce a single self-contained HTML file "
-        "(inline CSS/JS, no external requests) implementing the user's website request. "
-        "Prioritize visual hierarchy, typography, and polish. Return ONLY the HTML."
+    "contract-redline": (
+        "You are a senior associate competing in a blind professional-work arena. Produce a single "
+        "self-contained HTML document: a redline of the described NDA using <del>/<ins> markup, with a "
+        "short cover note summarizing your changes. Represent the instructing party's interests. "
+        "Return ONLY the HTML."
     ),
-    "ui-component": (
-        "Produce a single self-contained HTML file showcasing the requested UI component, centered "
-        "on a neutral page, production-quality craft. Return ONLY the HTML."
+    "clause-risk": (
+        "Produce a single self-contained HTML document: a clause-by-clause risk review table "
+        "(clause, High/Medium/Low rating, rationale, recommended pushback) for the described contract, "
+        "from the instructing party's perspective, plus a two-sentence summary. Return ONLY the HTML."
     ),
-    "dataviz": (
-        "Produce a single self-contained HTML file with the requested data visualization rendered as "
-        "inline SVG or canvas, with clear axes/labels. Invent plausible data if none given. Return ONLY the HTML."
+    "journal-entry": (
+        "You are a senior accountant. Produce a single self-contained HTML document with properly "
+        "formatted journal entries (account, debit, credit columns; balanced totals; memos) for the "
+        "described transaction under US GAAP. Return ONLY the HTML."
     ),
-    "game": (
-        "Produce a single self-contained HTML file with a playable browser mini-game per the request "
-        "(keyboard or mouse controls, score, restart). Return ONLY the HTML."
-    ),
-    "svg-logo": (
-        "Produce a single self-contained HTML file that displays the requested logo as inline SVG on a "
-        "clean backdrop, plus a small dark/light preview strip. Return ONLY the HTML."
-    ),
-    "ascii-art": (
-        "Produce a single self-contained HTML file that displays the requested ASCII art in a <pre> block, "
-        "terminal-styled. Return ONLY the HTML."
+    "coa-mapping": (
+        "Produce a single self-contained HTML document: a migration mapping table from the described "
+        "legacy general-ledger accounts to the target chart of accounts, with a confidence column and "
+        "a short note on approach. Return ONLY the HTML."
     ),
 }
 
 
 class GenerationProvider(Protocol):
-    async def generate(self, model: ArenaModel, prompt: str, category: str) -> GenerationResult: ...
+    async def generate(
+        self, model: ArenaModel, prompt: str, category: str, scenario: dict | None = None
+    ) -> GenerationResult: ...

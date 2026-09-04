@@ -1,8 +1,42 @@
-# Engineering architecture — Design Arena recreation
+# Engineering architecture — Benchmark Stadium
 
-**Date:** 2026-08-30 · companion to `PRD.md`
+**Date:** 2026-08-31 (v2 pivot) · companion to `PRD.md`
 
-## 1. System shape
+## 0. v2 pivot delta (professional work arena)
+
+The v1 skeleton below still describes the bones (one FastAPI process, SQLite,
+snapshot pipeline, sandboxed document iframes). The pivot adds:
+
+- **Taxonomy**: `categories.py` now holds two verticals (legal, finance) × four task
+  types; `scenarios.py` is the synthetic matter library with structured facts
+  (planted issues, expected postings, mapping keys) that generators and traps consume.
+- **Generation**: `services/providers/professional.py` replaces the design generator —
+  paper-styled work-product documents whose *substance* varies with a latent
+  per-model quality level, plus `generate_broken()` for gold-standard trap artifacts.
+- **Session shape**: 5 matches per battle — semi1, semi2, a `calibration` trap match
+  (scores the rater into `trap_results`, never `votes`), final, third. Trap slots and
+  positions are shuffled so nothing leaks which output is broken.
+- **Trust layer**: `users.tier` from email domain at signup (free-mail 0 → named 3);
+  `votes` carry `weight` (tier), server-side `decision_ms`, and `counted` (timing
+  floor, `DESIGNARENA_MIN_DECISION_MS`). `ratings.py` fits a **weighted**
+  Bradley–Terry; published snapshots read counted, weight ≥ 1 votes only.
+- **Reviewer record**: `services/reviewer.py` computes calibration score (traps),
+  consensus agreement vs. verified peers on identical (scenario, model-pair) votes —
+  well-defined because sample outputs are deterministic — percentile, and badges;
+  served at `/api/auth/reviewer`, rendered at `/profile`.
+- **Company boards + release drama (BS-16)**: `arena_models.kind`
+  (foundation | product | declined) with provenance + submitted version; products are
+  drafted and ranked only inside their vertical (`arena.eligible_models`), declined
+  vendors surface on boards as empty-chair rows (`LeaderboardOut.declined`).
+  `model_releases` records each release with per-board rank movement captured as
+  JSON; `services/releases.simulate_release` re-runs a foundation model (strength
+  shift → synthetic re-run votes → snapshot recompute → before/after ranks) behind
+  `POST /api/releases/simulate`, with `GET /api/releases` feeding the UI's Release
+  radar and home banner. Real release detection and vendor submission replace the
+  simulate path in production (BS-18). SQLite column backfill for the new
+  `arena_models` fields lives in `db._ensure_columns` (Alembic later).
+
+## 1. System shape (v1 baseline)
 
 ```
 benchmark-stadium/

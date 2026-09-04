@@ -17,10 +17,15 @@ from .ratings import compute_ratings
 
 
 def compute_snapshot(db: Session, category: str, bootstrap_rounds: int | None = None) -> RatingSnapshot | None:
-    q = select(Vote.winner_model_id, Vote.loser_model_id)
+    # Published boards use verified votes only: credential weight >= 1.0
+    # (work-domain tier and up, plus the flagged synthetic bootstrap) and
+    # votes that cleared the behavioral floor.
+    q = select(Vote.winner_model_id, Vote.loser_model_id, Vote.weight).where(
+        Vote.counted.is_(True), Vote.weight >= 1.0
+    )
     if category != OVERALL:
         q = q.where(Vote.category == category)
-    pairs = [(w, l) for w, l in db.execute(q)]
+    pairs = [(w, l, wt) for w, l, wt in db.execute(q)]
     if not pairs:
         return None
 

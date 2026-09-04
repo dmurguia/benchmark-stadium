@@ -1,7 +1,144 @@
-# PRD — Design Arena recreation
+# PRD — Benchmark Stadium
 
-**Status:** v1 shipped (this branch) · **Owner:** David Murguia · **Author:** Claude (PM/eng pass)
-**Date:** 2026-08-30
+**Status:** v2 pivot shipped · **Owner:** David Murguia · **Author:** Claude (PM/eng pass)
+**Date:** 2026-08-31 (v2) · 2026-08-30 (v1)
+
+---
+
+# v2 — The professional work arena (current)
+
+## Thesis
+
+Design Arena's primitive is cheap universal judgment at consumer scale; ours is the
+opposite: **scarce, attributed, expert judgment on accountable work** — the quadrant
+consumer arenas structurally cannot enter. The product is the arena loop applied to
+professional work product, with a trust layer that makes every vote attributable and
+weighable, in service of the larger strategy: certified custom benchmarks
+(per-firm mini-arenas + benchmark certificates) sold to enterprises, with vendor-side
+revenue later.
+
+## Scope decisions (v2 prototype)
+
+- **Two verticals, chosen by the "accountability filter"** (expert-only judgment ×
+  high stakes): **Legal** (contract-redline, clause-risk) and **Finance/ERP**
+  (journal-entry, coa-mapping). More verticals are a playbook, not a rebuild.
+  Roadmap verticals 3–4 (decided): **medical coding & clinical documentation**
+  (BS-14 — strongest certification culture, ICD-10/CPT-keyed scoring, churn-driven
+  training demand) and **tax** (BS-15).
+- **"We bring the doc."** All scenarios are synthetic matters with planted issues —
+  the sensitivity objection is solved by never needing an upload. BYOD
+  (describe-don't-disclose synthesis, sanitize-assist) is deliberately out of the MVP.
+- **Session = 5 comparisons**: two opening rounds, one hidden calibration trap,
+  top + consolation match. ~5 minutes for a professional.
+- **The reviewer's payoff is baked in** (the "what's in it for her" answer):
+  a calibration score from hidden gold-standard checks, a portable badge
+  ("Calibrated Reviewer", percentile), consensus agreement vs. peers, and early
+  intelligence on which models handle their work. Ten minutes a week maintains it.
+- **Trust layer shipped, not promised**: credential tiers from email domain
+  (free-mail = tier 0, directional only; work domain = tier 1, full weight; license =
+  tier 2 and named reviewer = tier 3 as upgrade placeholders), weighted BT fit,
+  behavioral timing floor, trap results per rater, verified-only published boards.
+- **Work products are genuinely gradeable.** The offline generator gives each model a
+  latent quality level that changes *substance* (issues caught, accounts chosen,
+  ratings right) — so a professional's pick is a real judgment, and broken trap
+  artifacts (unbalanced entries, swapped parties) are objectively wrong.
+
+## Growth thesis (decided 2026-08-31)
+
+The organic-growth mechanic is **release drama on company boards** (BS-16): the
+roster grows beyond foundation models to vendor *products* (opt-in self-submission;
+decliners listed; buyer-contributed outputs under the buyer's own license), foundation
+rows re-run automatically on every model release, and a quarterly "State of
+[vertical] AI" report is generated from board movement.
+
+**BS-16 prototype scope shipped (2026-09-01):** vendor products (fictional personas)
+compete on boards inside their vertical with PRODUCT badges and provenance
+(self-submitted / buyer-contributed + version); invited vendors who declined render as
+dashed empty-chair rows with a "submit your product" CTA — the deliberate FOMO surface;
+a release engine re-runs a foundation model's rows across its boards and captures the
+rank movement into a Release radar feed (one-click "simulate next release" stands in
+for real release detection) plus a home-page drama banner. Company-as-cohort ideas are
+explicitly *not* built as a feature — the empty chair is the only cohort mechanic kept.
+Production remainder (real submission portal, release detection, quarterly report) is
+BS-18.
+
+**BS-13 + BS-19 shipped (2026-09-01):** the front door is now prompt-first — an open
+"describe the work" box (keyword-routed to the right board) with work-type chips; a
+guest gets one real blind comparison before the in-session auth gate, and signing in
+mid-session claims the running bracket (guest votes carry zero board weight). The
+entire UI was rebuilt from the Magic Patterns design on the corsac.ai design system
+(`docs/magic-patterns-prompt.md` is the design source), wired screen-for-screen to the
+live API. Gimmick-tier growth hacks
+(daily puzzles, share cards) are explicitly rejected; the front door stays
+**prompt-first** (BS-13): describe the work → one blind comparison before signup.
+CE-credit (CPE/CLE) angles are rejected as non-durable; the durable adjacent wedge is
+**training & ramp-up** (BS-17) — judging calibrated work as deliberate practice for
+juniors in high-churn roles, sold per-seat into L&D/onboarding budgets, with trainee
+votes gaining board weight only as calibration is earned.
+
+## Focus decision (2026-09-02): accounting-first, calibrated judgment network
+
+**Positioning:** "The calibrated judgment layer for professional AI — starting with
+accounting." (Lab/investor framing: RL-grade human judgment network; practitioner
+framing: get ranked, get calibrated, get paid. Never say "RL" to CPAs.) Legal is
+demoted from launch vertical to fast-follow (Certera/Vals/Legora saturation); the
+platform stays vertical-agnostic.
+
+**Model (AfterQuery-adjacent, opposite surface):** AfterQuery et al. sell private
+expert data upstream to labs; we produce a public trust-weighted market signal and a
+**calibration-scored CPA panel**. Moat = continuously measured rater quality (trap
+pass rates, consensus, percentile — refreshed weekly) vs. their résumé-vetting; plus
+demand-side products (boards, State of Finance AI report) that data vendors can't
+build without ranking their own customers.
+
+**Supply ladder (novice → paid):** Guest (1 free comparison) → Verified (work email,
+counted votes) → CPA-verified (NASBA CPAVerify lookup → tier 2, 1.5×) → Calibrated
+Reviewer (≥80% traps over ≥5, consensus floor → paid-pool eligible) → **Panelist**
+(contracted paid eval work, weekly payout) → Lead reviewer (authors rubrics/traps,
+higher rate). Free work keeps public boards honest and builds the credential; paid
+work is private gigs. Demand-first lesson from AfterQuery's genesis still applies:
+line up 1–2 anchor design partners before scaling supply past ~200–500.
+
+**ICPs (priority order):**
+1. **Accounting-AI vendors** (Basis, Numeric, Rillet, Puzzle, Digits, Fieldguide,
+   DataSnipper, Vic.ai…): credibility gap vs. skeptical controllers. Free board
+   listing → paid certified evaluation ($10–40k, private-first with publish option)
+   → quarterly monitoring. Rillet = design-partner #1 candidate (warm network).
+2. **Labs + data vendors as channel** (Mercor/AfterQuery/Surge subcontracting
+   calibrated CPA capacity; APEX-Accounting proves finance-eval demand): calibrated
+   grading panels, gold-standard eval sets (Corsac pipeline), rubric authoring.
+   Per-judgment $3–15; projects $25–250k.
+3. **Enterprises/firms** (CAO/controller mid-ERP-decision; firm innovation leads):
+   private bake-offs + know-before-you-buy reports ($15–50k); L&D calibration
+   training per-seat (BS-17). Inbound via the board; pursue last.
+Individual professionals never pay.
+
+**Recruiting (community-first):** r/Accounting, Fishbowl Big-4 bowls, Going Concern
+(earned media), CPA-exam communities (trainee tier), LinkedIn CPA-filtered outreach +
+referral bounties, state societies; off-season timing (mid-Apr–Jun, post-Oct 15).
+Tier-2 verification via CPAVerify.org. First public artifact: **"State of Finance AI,
+Issue #1"** generated from captured `model_releases` board movement.
+
+## Out of scope (v2, deliberate)
+
+Bring-your-own-document; license-verification integrations (bar/CPA/SAP lookups);
+rater-level Bradley–Terry reliability weighting (trap pass-rate stands in); vendor
+astroturf detection beyond blindness + shuffling; per-firm private arenas (the
+enterprise product this prototype rehearses); live model generation (adapters exist
+behind placeholder keys).
+
+## v2 success criteria (all verified)
+
+- Full loop in a real browser: sign-in (work-domain → tier 1) → onboarding
+  (vertical + role) → scenario battle → 5 comparisons incl. trap → reveal with
+  calibration result → board moves → reviewer record page.
+- 15/15 backend tests: flow, bracket order, trap accounting, tier detection,
+  weighted verified snapshots, reviewer stats, catalog.
+- Zero-credential demo from a clean checkout.
+
+---
+
+# v1 — Design Arena recreation (superseded)
 
 ## 1. Context
 

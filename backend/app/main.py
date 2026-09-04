@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
 from .db import init_db
-from .routers import auth, battles, catalog, leaderboard
+from .routers import auth, battles, catalog, leaderboard, releases
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,6 +33,7 @@ app.include_router(auth.router)
 app.include_router(catalog.router)
 app.include_router(battles.router)
 app.include_router(leaderboard.router)
+app.include_router(releases.router)
 
 
 @app.get("/api/health")
