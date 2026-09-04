@@ -7,7 +7,7 @@ the app runs in `sample` generation mode by default so this never blocks the
 core experience.
 
 NOTE: exercised only against the documented API shapes, not real keys — verify
-each adapter once credentials are added (DESIGNARENA_GENERATION_MODE=live).
+each adapter once credentials are added (ARENA_GENERATION_MODE=live).
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def _require_key(key: str, provider: str) -> str:
     if not key or key.startswith("PLACEHOLDER"):
         raise ProviderNotConfigured(
             f"{provider} API key is a placeholder. Set the real key in the environment "
-            f"(see backend/.env.example) or keep DESIGNARENA_GENERATION_MODE=sample."
+            f"(see backend/.env.example) or keep ARENA_GENERATION_MODE=sample."
         )
     return key
 

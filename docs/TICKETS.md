@@ -34,7 +34,7 @@ Deterministic per (model, prompt, category), prompt-keyword aware, self-containe
 
 ### DA-5 · Live vendor adapters behind placeholder keys
 Anthropic / OpenAI / Google / OpenRouter adapters (httpx, shared category system
-prompts, fence stripping) routed by `DESIGNARENA_GENERATION_MODE=live`; fail fast with
+prompts, fence stripping) routed by `ARENA_GENERATION_MODE=live`; fail fast with
 `ProviderNotConfigured` while keys are `PLACEHOLDER_*`.
 *Labels: backend, generation · Estimate: 2*
 
@@ -96,14 +96,14 @@ mark variants. 12 backend tests green; browser QA re-run.
 ## Backlog (create as open tickets)
 
 ### DA-13 · Swap in real provider keys and smoke-test live generation
-Replace `PLACEHOLDER_*` keys in `.env`, set `DESIGNARENA_GENERATION_MODE=live`, verify
+Replace `PLACEHOLDER_*` keys in `.env`, set `ARENA_GENERATION_MODE=live`, verify
 each adapter (Anthropic/OpenAI/Google/OpenRouter) against real endpoints, tune category
 system prompts on real outputs.
 *Labels: backend, generation · Priority: Urgent · Estimate: 2*
 
 ### DA-14 · Wire transactional email for login codes
 Integrate Resend (or SendGrid) behind `EMAIL_PROVIDER_API_KEY`, set
-`DESIGNARENA_DEV_LOGIN_CODE=0`, add resend-code UX and basic rate limiting.
+`ARENA_DEV_LOGIN_CODE=0`, add resend-code UX and basic rate limiting.
 *Labels: backend, auth · Priority: High · Estimate: 1*
 
 ### DA-15 · Async generation UX for live mode
@@ -113,7 +113,7 @@ generations; frontend polls or SSE with per-slot skeletons and failure/retry sta
 *Labels: backend, frontend · Priority: High · Estimate: 3*
 
 ### DA-16 · Production hardening pass
-Set real `DESIGNARENA_SECRET_KEY`, move to Postgres (`DESIGNARENA_DATABASE_URL`),
+Set real `ARENA_SECRET_KEY`, move to Postgres (`ARENA_DATABASE_URL`),
 add Alembic migrations, guard `/api/leaderboard/recompute` behind admin auth, restrict
 CORS, schedule the batch ratings job (cron/worker).
 *Labels: infra · Priority: High · Estimate: 2*
@@ -164,7 +164,7 @@ the rater — never the models; positions and slots shuffled to prevent leakage.
 ### BS-4 · Credential tiers + weighted verified boards
 Tier from email domain at signup (free-mail 0 / work domain 1; license 2 and named 3
 as upgrade placeholders); votes carry tier weight + server-side decision_ms;
-behavioral timing floor (DESIGNARENA_MIN_DECISION_MS); weighted Bradley–Terry fit;
+behavioral timing floor (ARENA_MIN_DECISION_MS); weighted Bradley–Terry fit;
 published snapshots use counted, weight ≥ 1 votes only.
 *Labels: backend, trust · Estimate: 3*
 

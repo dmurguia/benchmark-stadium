@@ -16,7 +16,7 @@ from .routers import auth, battles, catalog, leaderboard, releases
 def _maybe_seed() -> None:
     """First boot on a fresh volume: seed the demo roster/votes so the boards
     aren't empty. No-op whenever any arena model already exists."""
-    if os.getenv("DESIGNARENA_AUTO_SEED", "1") != "1":
+    if os.getenv("ARENA_AUTO_SEED", "1") != "1":
         return
     from sqlalchemy import select
 
@@ -46,14 +46,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title=get_settings().app_name, lifespan=lifespan)
 
 # Dev servers are always allowed; hosted frontends come from env:
-#   DESIGNARENA_CORS_ORIGINS       comma-separated exact origins (the Vercel prod URL)
-#   DESIGNARENA_CORS_ORIGIN_REGEX  e.g. https://.*\.vercel\.app for preview deploys
+#   ARENA_CORS_ORIGINS       comma-separated exact origins (the Vercel prod URL)
+#   ARENA_CORS_ORIGIN_REGEX  e.g. https://.*\.vercel\.app for preview deploys
 _cors_origins = ["http://localhost:5173", "http://127.0.0.1:5173"]
-_cors_origins += [o.strip() for o in os.getenv("DESIGNARENA_CORS_ORIGINS", "").split(",") if o.strip()]
+_cors_origins += [o.strip() for o in os.getenv("ARENA_CORS_ORIGINS", "").split(",") if o.strip()]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
-    allow_origin_regex=os.getenv("DESIGNARENA_CORS_ORIGIN_REGEX") or None,
+    allow_origin_regex=os.getenv("ARENA_CORS_ORIGIN_REGEX") or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

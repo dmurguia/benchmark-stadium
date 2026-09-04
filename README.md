@@ -41,7 +41,7 @@ leaderboard) stands in for real release detection.
 - **Gold-standard traps**: every session hides one comparison against a deliberately
   broken work product (unbalanced entry, swapped parties). Results land in
   `trap_results` and drive each rater's calibration score, percentile, and badge.
-- **Behavioral floor**: votes decided faster than `DESIGNARENA_MIN_DECISION_MS`
+- **Behavioral floor**: votes decided faster than `ARENA_MIN_DECISION_MS`
   (default 4s) are recorded but never counted.
 - **Weighted Bradley–Terry**: the ratings fit consumes (winner, loser, weight).
 
@@ -72,10 +72,10 @@ have your votes count on the boards.
 
 ## Generation modes
 
-- `DESIGNARENA_GENERATION_MODE=sample` (default): the offline professional provider
+- `ARENA_GENERATION_MODE=sample` (default): the offline professional provider
   drafts real, gradeable work products per model quality tier — deterministic per
   (model, scenario), no credentials required.
-- `DESIGNARENA_GENERATION_MODE=live`: each model routes to its vendor adapter
+- `ARENA_GENERATION_MODE=live`: each model routes to its vendor adapter
   (Anthropic / OpenAI / Google / OpenRouter). Swap the `PLACEHOLDER_*` keys in
   `backend/.env.example` first. The scenario brief becomes the live prompt.
 

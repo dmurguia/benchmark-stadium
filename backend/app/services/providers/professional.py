@@ -10,7 +10,7 @@ Also builds gold-standard trap outputs: plausible-looking work that is
 objectively wrong (unbalanced entries, swapped parties), used to score rater
 reliability — never model skill.
 
-Swap for live model output with DESIGNARENA_GENERATION_MODE=live once keys
+Swap for live model output with ARENA_GENERATION_MODE=live once keys
 exist; the scenario brief is the prompt live models receive.
 """
 from __future__ import annotations
