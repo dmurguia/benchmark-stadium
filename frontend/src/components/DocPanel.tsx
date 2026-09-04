@@ -1,4 +1,5 @@
 import { MaximizeIcon } from "lucide-react";
+import { apiUrl } from "../lib/api";
 
 /** A work-product document panel: the design's paper chrome around the
  * sandboxed iframe that renders the generated (or trap) document. */
@@ -31,7 +32,7 @@ export function DocPanel({
       <iframe
         title={label}
         sandbox="allow-scripts"
-        src={`/api/battles/${battleId}/generations/${position}/html`}
+        src={apiUrl(`/api/battles/${battleId}/generations/${position}/html`)}
         className="h-full w-full flex-1 border-0 bg-white"
       />
     </article>
@@ -73,7 +74,7 @@ export function DocModal({
         <iframe
           title={`${label} expanded`}
           sandbox="allow-scripts"
-          src={`/api/battles/${battleId}/generations/${position}/html`}
+          src={apiUrl(`/api/battles/${battleId}/generations/${position}/html`)}
           className="h-full w-full flex-1 border-0 bg-white"
         />
       </div>
