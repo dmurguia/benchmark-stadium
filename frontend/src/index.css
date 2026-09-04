@@ -105,3 +105,22 @@ body {
     display: none;
   }
 }
+
+/* CalibrationLens — slow ledger waterfall. Content is doubled, so -50% loops. */
+.ledger-column {
+  overflow: hidden;
+  height: 100%;
+}
+.ledger-fall {
+  animation-name: ledger-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+@keyframes ledger-fall {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ledger-fall { animation: none; }
+}
